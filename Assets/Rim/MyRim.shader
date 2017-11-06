@@ -10,6 +10,7 @@ Shader "Unlit/MyRim"
 	Properties
 	{
 		_MainTex("Texture", 2D) = "white" {}
+		_Color("Color", Color) = (1,1,1,1)
 		_RimColor("RimColor", Color) = (1,1,1,1)
 		_RimWidth("RimPower", Range(0.001, 1)) = 0.001
 	}
@@ -24,6 +25,7 @@ Shader "Unlit/MyRim"
 			#pragma vertex vert
 			#pragma fragment frag
 
+			#include "Lighting.cginc"  
 			#include "UnityCG.cginc"
 
 			struct appdata
@@ -45,6 +47,7 @@ Shader "Unlit/MyRim"
 			float4 _MainTex_ST;
 			float4 _RimColor;
 			float _RimWidth;
+			fixed3 _Color;
 
 			v2f vert(appdata v)
 			{
@@ -61,6 +64,10 @@ Shader "Unlit/MyRim"
 				fixed3 worldNormal = normalize(i.worldnormal);
 				fixed3 worldViewDir = normalize(UnityWorldSpaceViewDir(i.worldpos));
 
+				fixed3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz);
+				fixed3 lambert = 0.5*dot(worldNormal, worldLightDir) + 0.5;
+				fixed3 diff = _Color.xyz*lambert*_LightColor0.xyz;
+
 				float fac = 1 - max(0, dot(worldNormal, worldViewDir));//得到法线和视角夹角因子
 
 				float wfac = 1 - _RimWidth;//得到宽度因子
@@ -72,6 +79,7 @@ Shader "Unlit/MyRim"
 				else
 				{
 					fixed4 col = tex2D(_MainTex, i.uv);
+					col.rgb = col.rgb*diff.rgb;
 					return col;
 				}
 			}
