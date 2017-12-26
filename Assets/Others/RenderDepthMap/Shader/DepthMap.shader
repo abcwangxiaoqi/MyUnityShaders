@@ -1,8 +1,4 @@
-﻿/*
-	created by chenjd
-	http://www.cnblogs.com/murongxiaopifu/
-*/
-Shader "chenjd/RenderDepthMapShader"
+﻿Shader "Unlit/DepthMap"
 {
 	Properties
 	{

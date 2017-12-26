@@ -1,4 +1,4 @@
-﻿Shader "Mya/Mya_GridBlend_World_Relative"
+﻿Shader "Unlit/GridBlend_Local"
 {
 	Properties
 	{
@@ -46,9 +46,7 @@
 				v2f o;
 				o.pos = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _GridTex);
-                float4 center = float4(unity_ObjectToWorld[0].w,unity_ObjectToWorld[1].w,unity_ObjectToWorld[2].w , 1);
-                float4 wpos = mul(unity_ObjectToWorld, v.vertex) - center;
-                o.vertex =wpos;
+                o.vertex =v.vertex;
 				return o;
 			}
 			
@@ -56,7 +54,7 @@
 			{
 				fixed4 col = tex2D(_GridTex, i.uv);
 
-				return _GridCol * col * saturate( (i.vertex.y  + _GridBlend)/ _BlendRange);
+				return _GridCol * col * saturate((i.vertex.z - _GridBlend)/ -_BlendRange);
 			}
 			ENDCG
 		}
@@ -99,16 +97,14 @@
 				v2f o;
 				o.pos = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-                float4 center = float4(unity_ObjectToWorld[0].w,unity_ObjectToWorld[1].w,unity_ObjectToWorld[2].w , 1);
-                float4 wpos = mul(unity_ObjectToWorld, v.vertex) - center;
-                o.vertex =wpos;
+                o.vertex =v.vertex;
 				return o;
 			}
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
 				fixed4 col = tex2D(_MainTex, i.uv);
-				return col * saturate( (i.vertex.y + _TexBlend ) /_BlendRange);
+				return col * saturate( (i.vertex.z - _TexBlend ) / -_BlendRange);
 			}
 			ENDCG
 		}

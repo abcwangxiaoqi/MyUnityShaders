@@ -1,4 +1,4 @@
-﻿Shader "Mya/Mya_GridBlend_World"
+﻿Shader "Unlit/GridBlend_World_Relative"
 {
 	Properties
 	{
@@ -16,8 +16,8 @@
 		Pass
 		{
             Name "GRID"
-            Cull Off //关闭剔除 不然看不到背面线条
-            ZWrite Off //关闭深度写入 不然背面渲染会有问题
+            Cull Off
+            ZWrite Off
             Blend One One
 			CGPROGRAM
 			#pragma vertex vert
@@ -46,7 +46,8 @@
 				v2f o;
 				o.pos = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _GridTex);
-                float4 wpos = mul(unity_ObjectToWorld, v.vertex);
+                float4 center = float4(unity_ObjectToWorld[0].w,unity_ObjectToWorld[1].w,unity_ObjectToWorld[2].w , 1);
+                float4 wpos = mul(unity_ObjectToWorld, v.vertex) - center;
                 o.vertex =wpos;
 				return o;
 			}
@@ -55,15 +56,15 @@
 			{
 				fixed4 col = tex2D(_GridTex, i.uv);
 
-				return _GridCol * col * saturate( (i.vertex.y  + _GridBlend )/ _BlendRange);
+				return _GridCol * col * saturate( (i.vertex.y  + _GridBlend)/ _BlendRange);
 			}
 			ENDCG
 		}
-		/*Pass
+        Pass
         {
             ZWrite On
             ColorMask 0
-        }*/
+        }
 		Pass
 		{
             Name "MAIN"
@@ -98,7 +99,8 @@
 				v2f o;
 				o.pos = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-                float4 wpos = mul(unity_ObjectToWorld, v.vertex);
+                float4 center = float4(unity_ObjectToWorld[0].w,unity_ObjectToWorld[1].w,unity_ObjectToWorld[2].w , 1);
+                float4 wpos = mul(unity_ObjectToWorld, v.vertex) - center;
                 o.vertex =wpos;
 				return o;
 			}
@@ -106,9 +108,11 @@
 			fixed4 frag (v2f i) : SV_Target
 			{
 				fixed4 col = tex2D(_MainTex, i.uv);
-				return col * saturate( (i.vertex.y + _TexBlend ) /_BlendRange);//saturate 把输入值限制到[0, 1]之间
+				return col * saturate( (i.vertex.y + _TexBlend ) /_BlendRange);
 			}
 			ENDCG
 		}
+
+
 	}
 }

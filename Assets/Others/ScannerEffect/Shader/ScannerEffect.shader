@@ -1,8 +1,4 @@
-﻿/*
-	created by chenjd
-	http://www.cnblogs.com/murongxiaopifu/
-*/
-Shader "chenjd/ScannerEffect"
+﻿Shader "Unlit/ScannerEffect"
 {
 	Properties
 	{
