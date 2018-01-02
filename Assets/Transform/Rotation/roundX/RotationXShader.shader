@@ -1,12 +1,4 @@
-﻿/*
-
-2D
-旋转矩阵 A表示旋转角度
-cosA  -sinA
-sinA   cosA
-
-*/
-
+﻿
 /*
 
 3D
@@ -16,29 +8,8 @@ sinA   cosA
 0    sinX   cosX    0
 0	  0      0      1
 
-
-绕Y旋转矩阵 Y表示旋转角度
-cosY    0    sinY    0
-0       1      0     0
--sinY   0    cosY    0
-0       0      0     1
-
-
-绕Z旋转矩阵 Z表示旋转角度
-cosZ    -sinZ    0    0
-sinZ     cosZ    0    0
-0          0     1    0
-0          0     0    1
-
-
-绕x,y,z旋转矩阵是上面三个矩阵的相乘得到
-cosYcosZ					-cosYcosZ					sinY				0
-cosXsinZ + sinXsinYcosZ		cosXcosZ - sinXsinYsinZ		-sinXcosY			0
-sinXsinZ - cosXsinYcosZ		sinXcosZ + cosXsinYsinZ		cosXcosY			0
-0							0							0					1
-
 */
-Shader "Unlit/RotationShader"
+Shader "Unlit/RotationXShader"
 {
 	Properties
 	{
@@ -72,24 +43,32 @@ Shader "Unlit/RotationShader"
 
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
-			float _Angle;
+			uniform float _Angle;
+			float4 _Rotation;
+
+			float4x4 roundByX()
+			{
+				float rady=radians(_Angle);
+				float sinN=sin(rady);
+				float cosN=cos(rady);
+
+
+				return float4x4(1,0,0,0,
+				0,cosN,-sinN,0,
+				0,sinN,cosN,0,
+				0,0,0,1);
+			}
+
 			v2f vert (appdata v)
 			{
 				v2f o;
+
+				v.vertex=mul(roundByX(),v.vertex);
+
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 				return o;
 			}
-
-			/*float4x4 roundByY(float4 trans)
-			{
-				return float4x4(
-					cos(_Angle),0,sin(_Angle),0,
-					0,1,0,0,
-					-sin(_Angle),0,cos(_Angle),0,
-					0,0,0,1
-					)
-			}*/
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
