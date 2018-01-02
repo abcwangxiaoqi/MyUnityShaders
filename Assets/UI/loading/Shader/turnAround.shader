@@ -46,9 +46,12 @@
 
 				//2D旋转矩阵公式
 				float speed = pow(_RotateSpeed, 2);
-				float x = uv.x * cos(speed * _Time.x) - uv.y * sin(speed * _Time.x);
-				float y = uv.x * sin(speed * _Time.x) + uv.y * cos(speed * _Time.x);
-				uv = float2(x, y) + float2(0.5, 0.5);
+				float angle=speed * _Time.x;
+			
+				float x = uv.x * cos(angle) - uv.y * sin(angle);
+				float y = uv.x * sin(angle) + uv.y * cos(angle);
+				uv = float2(x,y) + float2(0.5, 0.5);
+
 				half4 c = tex2D(_MainTex , uv) * _Color;
 				return c;
 			}
