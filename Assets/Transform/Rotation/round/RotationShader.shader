@@ -16,20 +16,17 @@ sinA   cosA
 0    sinX   cosX    0
 0	  0      0      1
 
-
 绕Y旋转矩阵 Y表示旋转角度
 cosY    0    sinY    0
 0       1      0     0
 -sinY   0    cosY    0
 0       0      0     1
 
-
 绕Z旋转矩阵 Z表示旋转角度
 cosZ    -sinZ    0    0
 sinZ     cosZ    0    0
 0          0     1    0
 0          0     0    1
-
 
 绕x,y,z旋转矩阵是上面三个矩阵的相乘得到
 cosYcosZ					-cosYcosZ					sinY				0

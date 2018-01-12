@@ -17,7 +17,7 @@
 		{
             Name "GRID"
             Cull Off //关闭剔除 不然看不到背面线条
-            ZWrite Off //关闭深度写入 不然背面渲染会有问题
+            ZWrite Off //关闭深度写入 不然背面渲染会有问题 
             Blend One One
 			CGPROGRAM
 			#pragma vertex vert

@@ -1,4 +1,6 @@
-﻿// Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+// Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
 // Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
 Shader "Unlit/MyOutLine"
@@ -41,6 +43,7 @@ Shader "Unlit/MyOutLine"
 		float3 vnormal = mul((float3x3)UNITY_MATRIX_IT_MV, v.normal);
 		//将视空间法线xy坐标转化到投影空间，只有xy需要，z深度不需要了
 		float2 offset = TransformViewToProjection(vnormal.xy);
+
 		//在最终投影阶段输出进行偏移操作
 		o.pos.xy += offset * _OutlineFactor;
 		return o;
