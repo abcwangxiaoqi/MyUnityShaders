@@ -90,7 +90,7 @@ Shader "Unlit/RotationShader"
 			{
 				float radx=radians(rot.x);
 				float rady=radians(rot.y);
-				float radz=radians(rot.x);
+				float radz=radians(rot.z);
 
 				float sinx=sin(radx);
 				float cosx=cos(radx);
