@@ -25,6 +25,7 @@ Shader "Unlit/MyOutLine"
 
 		CGPROGRAM
 #include "UnityCG.cginc"
+#include "../CommonMethod/MyCgInclude.cginc"
 		fixed4 _OutlineCol;
 	float _OutlineFactor;
 
@@ -38,11 +39,8 @@ Shader "Unlit/MyOutLine"
 		v2f o;
 		//在vertex阶段，每个顶点按照法线的方向偏移一部分，不过这种会造成近大远小的透视问题
 		//v.vertex.xyz += v.normal * _OutlineFactor;
-		o.pos = UnityObjectToClipPos(v.vertex);
-		//将法线方向转换到视空间
-		float3 vnormal = mul((float3x3)UNITY_MATRIX_IT_MV, v.normal);
-		//将视空间法线xy坐标转化到投影空间，只有xy需要，z深度不需要了
-		float2 offset = TransformViewToProjection(vnormal.xy);
+		o.pos = UnityObjectToClipPos(v.vertex);		
+		float2 offset=normalToClip(v.normal);//法线空间转裁剪空间
 
 		//在最终投影阶段输出进行偏移操作
 		o.pos.xy += offset * _OutlineFactor;
