@@ -4,7 +4,7 @@
 	{
 		_Color("Main Color", Color) = (1,1,1,1)
 		_MainTex("Main Texture", 2D) = "white" {}
-		_RotateSpeed("Rotate Speed", Range(1, 10)) = 5
+		_RotateSpeed("Rotate Speed", Range(1, 360)) = 180
 	}
 
 	SubShader
@@ -19,7 +19,10 @@
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
+			#include "../../CommonCg/MyCgInclude.cginc"
 			#include "UnityCG.cginc"
+
+
 
 			float4 _Color;
 			sampler2D _MainTex;
@@ -44,13 +47,10 @@
 				//以纹理中心为旋转中心
 				float2 uv = i.uv.xy - float2(0.5, 0.5);
 
-				//2D旋转矩阵公式
-				float speed = pow(_RotateSpeed, 2);
-				float angle=speed * _Time.x;
-			
-				float x = uv.x * cos(angle) - uv.y * sin(angle);
-				float y = uv.x * sin(angle) + uv.y * cos(angle);
-				uv = float2(x,y) + float2(0.5, 0.5);
+				float angle=_RotateSpeed * _Time.y;
+
+				float2 round=mul(twoDRoundMatrix(angle),uv);
+				uv = round + float2(0.5, 0.5);				
 
 				half4 c = tex2D(_MainTex , uv) * _Color;
 				return c;

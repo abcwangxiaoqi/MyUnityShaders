@@ -29,6 +29,19 @@
 						);
 	}
 
+	/*
+	2d 旋转矩阵
+	*/
+	float2x2 twoDRoundMatrix(float angle)
+	{
+		float rady=radians(angle);
+		float sinN=sin(rady);
+		float cosN=cos(rady);
+
+		return float2x2(cosN,-sinN,
+						sinN,cosN);
+	}
+
 	//绕X轴旋转矩阵
 	/*
 	绕X旋转矩阵 X表示旋转角度
