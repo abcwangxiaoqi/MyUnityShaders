@@ -3,9 +3,10 @@
 
 	float3 normalToClip(float3 normal)
 	{
-        float3 worldNor=UnityObjectToWorldNormal(normal);
-		float3 clipNor=mul(UNITY_MATRIX_VP,worldNor);
-		return normalize(clipNor);
+		
+        float3 viewNormal= mul((float3x3)UNITY_MATRIX_IT_MV, normal);
+		float3 clipNormal=mul((float3x3)UNITY_MATRIX_P, viewNormal);
+		return clipNormal;
 	}
 
 	//得到位移矩阵

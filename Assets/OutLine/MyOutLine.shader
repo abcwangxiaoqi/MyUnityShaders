@@ -13,110 +13,131 @@ Shader "Unlit/MyOutLine"
 		_MainTex("Base 2D", 2D) = "white"{}
 	}
 
-		//子着色器	
-		SubShader
+	//子着色器	
+	SubShader
 	{
 
 		//描边使用两个Pass，第一个pass沿法线挤出一点，只输出描边的颜色
 		Pass
-	{
+		{
 		//剔除正面，只渲染背面，对于大多数模型适用，不过如果需要背面的，就有问题了
-		Cull Front
+			Cull Front
 
-		CGPROGRAM
-#include "UnityCG.cginc"
-#include "../CommonMethod/MyCgInclude.cginc"
-		fixed4 _OutlineCol;
-	float _OutlineFactor;
+			CGPROGRAM
+			#include "UnityCG.cginc"
+			#include "../CommonCg/MyCgInclude.cginc"
+			fixed4 _OutlineCol;
+			float _OutlineFactor;
 
-	struct v2f
-	{
-		float4 pos : SV_POSITION;
-	};
+			struct v2f
+			{
+				float4 pos : SV_POSITION;
+			};
 
-	v2f vert(appdata_full v)
-	{
-		v2f o;
-		//在vertex阶段，每个顶点按照法线的方向偏移一部分，不过这种会造成近大远小的透视问题
-		//v.vertex.xyz += v.normal * _OutlineFactor;
-		o.pos = UnityObjectToClipPos(v.vertex);		
-		float2 offset=normalToClip(v.normal);//法线空间转裁剪空间
+			v2f vert2(appdata_full v)
+			{
+				v2f o;
 
-		//在最终投影阶段输出进行偏移操作
-		o.pos.xy += offset * _OutlineFactor;
-		return o;
-	}
+				float4 worldPos=mul(unity_ObjectToWorld,v.vertex);//顶点的世界坐标
+				float3 worldNormal=mul(v.normal,(float3x3)unity_WorldToObject);//法线向量的世界坐标
+				worldPos.xy+=worldNormal.xy*_OutlineFactor;//沿法线方向的xy 向外扩张
 
-	fixed4 frag(v2f i) : SV_Target
-	{
-		//这个Pass直接输出描边颜色
-		return _OutlineCol;
-	}
+				o.pos=mul(UNITY_MATRIX_VP,worldPos);
+				return o;
+			}
 
-		//使用vert函数和frag函数
-#pragma vertex vert
-#pragma fragment frag
-		ENDCG
-	}
+			v2f vert3(appdata_full v)
+			{
+				v2f o;
+				//在vertex阶段，每个顶点按照法线的方向偏移一部分，不过这种会造成近大远小的透视问题
+				v.vertex.xyz += v.normal * _OutlineFactor;
+				o.pos = UnityObjectToClipPos(v.vertex);
+				return o;
+			}
+
+			v2f vert(appdata_full v)
+			{
+				v2f o;
+				o.pos = UnityObjectToClipPos(v.vertex);
+				float2 cnormal=normalToClip(v.normal).xy;//法线空间转裁剪空间
+
+				//在最终投影阶段输出进行偏移操作
+				o.pos.xy += cnormal * _OutlineFactor;
+				return o;
+			}
+
+			fixed4 frag(v2f i) : SV_Target
+			{
+				//这个Pass直接输出描边颜色
+				return _OutlineCol;
+			}
+
+			//使用vert函数和frag函数
+			#pragma vertex vert 计算裁剪空间的 法线 来进行扩张
+			//#pragma vertex vert2 计算世界空间的 法线 来进行扩张
+			//#pragma vertex vert3 本地空间的沿着法线方向进行扩张
+			#pragma fragment frag
+			ENDCG
+		}
 
 		//正常着色的Pass
 		Pass
-	{
-		CGPROGRAM
+		{
+			CGPROGRAM
 
-		//引入头文件
-#include "Lighting.cginc"
-		//定义Properties中的变量
-		fixed4 _Diffuse;
-	sampler2D _MainTex;
-	//使用了TRANSFROM_TEX宏就需要定义XXX_ST
-	float4 _MainTex_ST;
+			//引入头文件
+			#include "Lighting.cginc"
+			//定义Properties中的变量
+			fixed4 _Diffuse;
+			sampler2D _MainTex;
+			//使用了TRANSFROM_TEX宏就需要定义XXX_ST
+			float4 _MainTex_ST;
 
-	//定义结构体：vertex shader阶段输出的内容
-	struct v2f
-	{
-		float4 pos : SV_POSITION;
-		float3 worldNormal : TEXCOORD0;
-		float2 uv : TEXCOORD1;
-	};
+			//定义结构体：vertex shader阶段输出的内容
+			struct v2f
+			{
+				float4 pos : SV_POSITION;
+				float3 worldNormal : TEXCOORD0;
+				float2 uv : TEXCOORD1;
+			};
 
-	//定义顶点shader,参数直接使用appdata_base（包含position, noramal, texcoord）
-	v2f vert(appdata_base v)
-	{
-		v2f o;
-		o.pos = UnityObjectToClipPos(v.vertex);
-		//通过TRANSFORM_TEX宏转化纹理坐标，主要处理了Offset和Tiling的改变,默认时等同于o.uv = v.texcoord.xy;
-		o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
-		o.worldNormal = mul(v.normal, (float3x3)unity_WorldToObject);
-		return o;
+			//定义顶点shader,参数直接使用appdata_base（包含position, noramal, texcoord）
+			v2f vert(appdata_base v)
+			{
+				v2f o;
+				o.pos = UnityObjectToClipPos(v.vertex);
+				//通过TRANSFORM_TEX宏转化纹理坐标，主要处理了Offset和Tiling的改变,默认时等同于o.uv = v.texcoord.xy;
+				o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
+				o.worldNormal = mul(v.normal, (float3x3)unity_WorldToObject);
+				return o;
+			}
+
+			//定义片元shader
+			fixed4 frag(v2f i) : SV_Target
+			{
+				//unity自身的diffuse也是带了环境光，这里我们也增加一下环境光
+				fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz * _Diffuse.xyz;
+				//归一化法线，即使在vert归一化也不行，从vert到frag阶段有差值处理，传入的法线方向并不是vertex shader直接传出的
+				fixed3 worldNormal = normalize(i.worldNormal);
+				//把光照方向归一化
+				fixed3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz);
+				//根据半兰伯特模型计算像素的光照信息
+				fixed3 lambert = 0.5 * dot(worldNormal, worldLightDir) + 0.5;
+				//最终输出颜色为lambert光强*材质diffuse颜色*光颜色
+				fixed3 diffuse = lambert * _Diffuse.xyz * _LightColor0.xyz + ambient;
+				//进行纹理采样
+				fixed4 color = tex2D(_MainTex, i.uv);
+				color.rgb = color.rgb* diffuse;
+				return fixed4(color);
+			}
+
+			//使用vert函数和frag函数
+			#pragma vertex vert
+			#pragma fragment frag	
+
+			ENDCG
+		}
 	}
-
-	//定义片元shader
-	fixed4 frag(v2f i) : SV_Target
-	{
-		//unity自身的diffuse也是带了环境光，这里我们也增加一下环境光
-		fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz * _Diffuse.xyz;
-	//归一化法线，即使在vert归一化也不行，从vert到frag阶段有差值处理，传入的法线方向并不是vertex shader直接传出的
-	fixed3 worldNormal = normalize(i.worldNormal);
-	//把光照方向归一化
-	fixed3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz);
-	//根据半兰伯特模型计算像素的光照信息
-	fixed3 lambert = 0.5 * dot(worldNormal, worldLightDir) + 0.5;
-	//最终输出颜色为lambert光强*材质diffuse颜色*光颜色
-	fixed3 diffuse = lambert * _Diffuse.xyz * _LightColor0.xyz + ambient;
-	//进行纹理采样
-	fixed4 color = tex2D(_MainTex, i.uv);
-	color.rgb = color.rgb* diffuse;
-	return fixed4(color);
-	}
-
-		//使用vert函数和frag函数
-#pragma vertex vert
-#pragma fragment frag	
-
-		ENDCG
-	}
-	}
-		//前面的Shader失效的话，使用默认的Diffuse
-		FallBack "Diffuse"
+	//前面的Shader失效的话，使用默认的Diffuse
+	FallBack "Diffuse"
 }
