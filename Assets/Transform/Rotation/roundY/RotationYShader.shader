@@ -1,15 +1,4 @@
-﻿/*
-
-3D
-
-绕Y旋转矩阵 Y表示旋转角度
-cosY    0    sinY    0
-0       1      0     0
--sinY   0    cosY    0
-0       0      0     1
-
-*/
-Shader "Unlit/RotationYShader"
+﻿Shader "Unlit/RotationYShader"
 {
 	Properties
 	{
@@ -26,7 +15,7 @@ Shader "Unlit/RotationYShader"
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
-			
+			#include "../../../CommonCg/MyCgInclude.cginc"
 			#include "UnityCG.cginc"
 
 			struct appdata
@@ -46,24 +35,10 @@ Shader "Unlit/RotationYShader"
 			uniform float _Angle;
 			float4 _Rotation;
 
-			float4x4 roundByY()
-			{
-				float rady=radians(_Angle);
-				float sinN=sin(rady);
-				float cosN=cos(rady);
-
-
-				return float4x4(cosN,0,sinN,0,
-				0,1,0,0,
-				-sinN,0,cosN,0,
-				0,0,0,1);
-			}
-
 			v2f vert (appdata v)
 			{
 				v2f o;
-
-				v.vertex=mul(roundByY(),v.vertex);
+				v.vertex=mul(roundYMatrix(_Angle),v.vertex);
 
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);

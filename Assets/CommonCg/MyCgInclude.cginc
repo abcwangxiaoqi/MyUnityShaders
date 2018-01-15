@@ -9,7 +9,12 @@
 		return clipNormal;
 	}
 
-	//得到位移矩阵
+	/*得到位移矩阵
+	1	0	0	TX
+	0	1	0	TY
+	0	0	1	TZ
+	0	0	0	1
+	*/
 	float4x4 MoveMatrix(float4 trans)
 	{
 		return float4x4(1,0,0,trans.x,
@@ -19,7 +24,13 @@
 						);
 	}
 
-	//缩放矩阵
+	/*缩放矩阵
+		放大缩小矩阵
+		SX   0    0    0
+		0    SY	 0    0
+		0     0   SZ   0
+		0     0    0    1
+	*/
 	float4x4 ScaleMatrix(float4 scale)
 	{
 		return float4x4(scale.x, 0, 0, 0,

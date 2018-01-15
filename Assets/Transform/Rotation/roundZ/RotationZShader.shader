@@ -1,16 +1,4 @@
-﻿
-/*
-
-3D
-
-绕Z旋转矩阵 Z表示旋转角度
-cosZ    -sinZ    0    0
-sinZ     cosZ    0    0
-0          0     1    0
-0          0     0    1
-
-*/
-Shader "Unlit/RotationZShader"
+﻿Shader "Unlit/RotationZShader"
 {
 	Properties
 	{
@@ -27,7 +15,7 @@ Shader "Unlit/RotationZShader"
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
-			
+			#include "../../../CommonCg/MyCgInclude.cginc"
 			#include "UnityCG.cginc"
 
 			struct appdata
@@ -46,24 +34,11 @@ Shader "Unlit/RotationZShader"
 			float4 _MainTex_ST;
 			uniform float _Angle;
 
-			float4x4 roundByZ()
-			{
-				float rady=radians(_Angle);
-				float sinN=sin(rady);
-				float cosN=cos(rady);
-
-
-				return float4x4(cosN,-sinN,0,0,
-				sinN,cosN,0,0,
-				0,0,1,0,
-				0,0,0,1);
-			}
-
 			v2f vert (appdata v)
 			{
 				v2f o;
 
-				v.vertex=mul(roundByZ(),v.vertex);
+				v.vertex=mul(roundZMatrix(_Angle),v.vertex);
 
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
