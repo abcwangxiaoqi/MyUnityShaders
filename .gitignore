@@ -2,3 +2,6 @@ Library/
 Temp/
 *.sln
 *.csproj
+Assets/VSCode/
+Assets/VSCode.meta
+.vscode/
