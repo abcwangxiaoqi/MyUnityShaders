@@ -1,4 +1,6 @@
 #ifndef MY_CG_INCLUDE
+// Upgrade NOTE: excluded shader from OpenGL ES 2.0 because it uses non-square matrices
+#pragma exclude_renderers gles
 #define MY_CG_INCLUDE
 
 	float3 normalToClip(float3 normal)
