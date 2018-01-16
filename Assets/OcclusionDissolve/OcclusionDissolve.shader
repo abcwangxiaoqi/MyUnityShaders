@@ -4,6 +4,7 @@
 	{
 		_MainTex ("Texture", 2D) = "white" {}
 		_NoiseMap("Noise Map", 2D) = "white"{}
+		_DissolveRadius("_DissolveRadius",Range(0,1))=0.3//消融半径
 		_DissolveThreshold("DissolveThreshold", Range(0,2)) = 0  
 	}
 	SubShader
@@ -38,6 +39,7 @@
 			float4 _MainTex_ST;
 			sampler2D _NoiseMap;
 			float _DissolveThreshold;
+			float _DissolveRadius;
 			
 			v2f vert (appdata v)
 			{
@@ -57,19 +59,18 @@
 				float2 screenPos=i.screenPos.xy/i.screenPos.w;
 
 				float2 dir=float2(0.5,0.5)-screenPos;
-				float distance=length(dir);
+				float distance=length(dir);// 0~0.5
+				
+			//	clip(yz);
 
-				float yz=(0.5-distance)*2;//溶解因子
+				//是否大于消融范围
+				float sp=step(distance,_DissolveRadius);
 
-				//距离中心点近的才进行溶解处理  
-				//float disolveFactor = (0.5 - distance) * _DissolveThreshold;  
-				//采样Dissolve Map  
-				//fixed4 dissolveValue = tex2D(_DissolveMap, i.uv);  
-				//小于阈值的部分直接discard  
-				if ( distance<0.3)  
-				{  
-					discard;
-				}
+				//噪声图 采样
+				fixed3 burn = tex2D(_NoiseMap, i.uv).rgb;	
+				//根据 噪声r 和 距离范围 clip			
+				clip(burn.r - sp*(1-distance/_DissolveRadius));
+
 
 				fixed4 col = tex2D(_MainTex, i.uv);
 				return col;
