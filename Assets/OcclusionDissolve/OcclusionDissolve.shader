@@ -4,8 +4,10 @@
 	{
 		_MainTex ("Texture", 2D) = "white" {}
 		_NoiseMap("Noise Map", 2D) = "white"{}
-		_DissolveRadius("_DissolveRadius",Range(0,1))=0.3//消融半径
-		_DissolveThreshold("DissolveThreshold", Range(0,2)) = 0  
+		_DissolveWidth("_DissolveWidth",Range(0.1,1))=0.5
+		_ClipDistance("_ClipDistance",float)=20
+		_DissolveColor("_DissolveColor",Color)=(1,1,1,1)
+		_DissolveRadius("_DissolveRadius",Range(0,1))=0.3//消融半径 
 	}
 	SubShader
 	{
@@ -31,7 +33,7 @@
 			{
 				float2 uv : TEXCOORD0;
 				float4 vertex : SV_POSITION;
-				float3 worldNormal:TEXCOORD1;
+				float3 worldPos:TEXCOORD1;
 				float4 screenPos:TEXCOORD2;
 			};
 
@@ -40,6 +42,9 @@
 			sampler2D _NoiseMap;
 			float _DissolveThreshold;
 			float _DissolveRadius;
+			float _ClipDistance;
+			float3 _DissolveColor;
+			float _DissolveWidth;
 			
 			v2f vert (appdata v)
 			{
@@ -47,7 +52,7 @@
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 
-				o.worldNormal=UnityObjectToWorldNormal(v.normal).xyz;
+				o.worldPos=mul(unity_ObjectToWorld,v.vertex).xyz;
 				o.screenPos=ComputeGrabScreenPos(o.vertex);
 
 				return o;
@@ -57,22 +62,27 @@
 			{
 				// sample the texture
 				float2 screenPos=i.screenPos.xy/i.screenPos.w;
+				float3 worldPos=i.worldPos;
+				float dis=length(worldPos-_WorldSpaceCameraPos);
 
 				float2 dir=float2(0.5,0.5)-screenPos;
 				float distance=length(dir);// 0~0.5
 				
-			//	clip(yz);
-
-				//是否大于消融范围
-				float sp=step(distance,_DissolveRadius);
+				float DisFlag=step(dis,_ClipDistance);
+				float RadiusFlag=step(distance,_DissolveRadius);
 
 				//噪声图 采样
 				fixed3 burn = tex2D(_NoiseMap, i.uv).rgb;	
-				//根据 噪声r 和 距离范围 clip			
-				clip(burn.r - sp*(1-distance/_DissolveRadius));
-
+				//根据 噪声r 和 距离范围 clip
+				float clipV=burn.r - DisFlag*RadiusFlag*(1-distance/_DissolveRadius);		
+				clip(clipV);
 
 				fixed4 col = tex2D(_MainTex, i.uv);
+
+				//smoothstep方法映射范围(0~1) t==0 溶解边界 t==1正常渲染
+				float t=smoothstep(0,0.2,clipV);
+
+				col.xyz=lerp(col.xyz,_DissolveColor,1-t);
 				return col;
 			}
 			ENDCG
