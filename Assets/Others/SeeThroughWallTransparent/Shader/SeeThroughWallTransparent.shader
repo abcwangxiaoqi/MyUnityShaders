@@ -67,7 +67,7 @@
 			ENDCG
 		}
 
-		/*pass
+		pass
 		{
 			ZWrite On
 			ColorMask 0
@@ -115,6 +115,6 @@
 				return col;
 			}
 			ENDCG
-		}*/
+		}
 	}
 }

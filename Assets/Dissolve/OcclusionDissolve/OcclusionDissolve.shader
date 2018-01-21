@@ -7,7 +7,7 @@
 		_DissolveWidth("_DissolveWidth",Range(0.1,1))=0.5
 		_ClipDistance("_ClipDistance",float)=20
 		_DissolveColor("_DissolveColor",Color)=(1,1,1,1)
-		_DissolveRadius("_DissolveRadius",Range(0,1))=0.3//消融半径 
+		_DissolveRadius("_DissolveRadius",Range(0.1,1))=0.3//消融半径 
 	}
 	SubShader
 	{
@@ -82,7 +82,7 @@
 				fixed4 col = tex2D(_MainTex, i.uv);
 
 				//smoothstep方法映射范围(0~1) t==0 溶解边界 t==1正常渲染
-				float t=smoothstep(0,0.2,clipV);
+				float t=smoothstep(0,_DissolveWidth,clipV);
 
 				col.xyz=lerp(col.xyz,_DissolveColor,1-t);
 				return col;
