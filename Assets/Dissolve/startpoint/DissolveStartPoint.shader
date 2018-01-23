@@ -55,7 +55,7 @@
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				o.objPos=mul(unity_WorldToObject,v.vertex);
+				o.objPos=v.vertex;
 				o.start=mul(unity_WorldToObject,_Start);
 				return o;
 			}
@@ -66,7 +66,7 @@
 
 				float len=length(i.start.xyz-i.objPos.xyz);
 
-				float yz=len/_MaxDistance;
+				float yz=1-len/_MaxDistance;
 
 				fixed4 col = tex2D(_MainTex, i.uv);
 

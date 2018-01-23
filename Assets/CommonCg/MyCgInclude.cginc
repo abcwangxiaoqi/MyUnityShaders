@@ -3,7 +3,7 @@
 #pragma exclude_renderers gles
 #define MY_CG_INCLUDE
 
-	float3 normalToClip(float3 normal)
+	inline float3 normalToClip(in float3 normal)
 	{
 		
         float3 viewNormal= mul((float3x3)UNITY_MATRIX_IT_MV, normal);
@@ -17,7 +17,7 @@
 	0	0	1	TZ
 	0	0	0	1
 	*/
-	float4x4 MoveMatrix(float4 trans)
+	inline float4x4 MoveMatrix(in float4 trans)
 	{
 		return float4x4(1,0,0,trans.x,
 						0,1,0,trans.y,
@@ -33,7 +33,7 @@
 		0     0   SZ   0
 		0     0    0    1
 	*/
-	float4x4 ScaleMatrix(float4 scale)
+	inline float4x4 ScaleMatrix(in float4 scale)
 	{
 		return float4x4(scale.x, 0, 0, 0,
 						0, scale.y, 0, 0,
@@ -45,7 +45,7 @@
 	/*
 	2d 旋转矩阵
 	*/
-	float2x2 twoDRoundMatrix(float angle)
+	inline float2x2 twoDRoundMatrix(in float angle)
 	{
 		float rady=radians(angle);
 		float sinN=sin(rady);
@@ -63,7 +63,7 @@
 	0    sinX   cosX    0
 	0	  0      0      1
 	*/
-	float4x4 roundXMatrix(float angle)
+	inline float4x4 roundXMatrix(in float angle)
 	{
 		float rady=radians(angle);
 		float sinN=sin(rady);
@@ -84,7 +84,7 @@
 	-sinY   0    cosY    0
 	0       0      0     1
 	*/
-	float4x4 roundYMatrix(float angle)
+	inline float4x4 roundYMatrix(in float angle)
 	{
 		float rady=radians(angle);
 		float sinN=sin(rady);
@@ -105,7 +105,7 @@
 	0          0     1    0
 	0          0     0    1
 	*/
-	float4x4 roundZMatrix(float angle)
+	inline float4x4 roundZMatrix(in float angle)
 	{
 		float rady=radians(angle);
 		float sinN=sin(rady);
@@ -126,7 +126,7 @@
 	sinXsinZ - cosXsinYcosZ		sinXcosZ + cosXsinYsinZ		cosXcosY			0
 	0							0							0					1
 	*/
-	float4x4 roundMatrix(float3 rot)
+	inline float4x4 roundMatrix(in float3 rot)
 	{
 		float radx=radians(rot.x);
 		float rady=radians(rot.y);
@@ -144,6 +144,42 @@
 						sinx*sinz-cosx*siny*cosz,sinx*cosz+cosx*siny*sinz,cosx*cosy,0,
 						0,0,0,1);
 				
+	}
+
+	//lambert light model
+	inline float3 Lambert(in float3 worldNormal,in float3 worldPos)
+	{
+		worldNormal=normalize(worldNormal);
+		float3 worldLightDir=normalize(UnityWorldSpaceLightDir(worldPos));
+		fixed3 lambert = max(0.0, dot(worldNormal, worldLightDir));  
+		return lambert;
+	}
+
+	inline float3 Lambert_DiffLightAmbient(in float3 worldNormal,in float3 worldPos,in float3 diffuse,in float3 ambient)
+	{
+		float3 lambert=Lambert(worldNormal,worldPos);
+		return lambert*diffuse*_LightColor0.xyz+ambient;
+	}
+
+	//half lambert light model
+	inline float3 HalfLambert(in float3 worldNormal,in float3 worldPos)
+	{
+		worldNormal=normalize(worldNormal);
+		float3 worldLightDir=normalize(UnityWorldSpaceLightDir(worldPos));
+		fixed3 lambert =  0.5 * dot(worldNormal, worldLightDir) + 0.5;;  
+		return lambert;
+	}
+
+	inline float3 HalfLambert_DiffLightAmbient(in float3 worldNormal,in float3 worldPos,in float3 diffuse,in float3 ambient)
+	{
+		float3 lambert=HalfLambert(worldNormal,worldPos);
+		return lambert*diffuse*_LightColor0.xyz+ambient;
+	}
+
+	//unity 自带环境光
+	inline float3 unityAmbient(in float3 diffuse)
+	{
+		return UNITY_LIGHTMODEL_AMBIENT.xyz * diffuse.xyz;
 	}
 
 #endif
