@@ -9,7 +9,7 @@ Shader "Unlit/MyRim2"
 		_MainTex("Texture", 2D) = "white" {}
 		_Color("Color", Color) = (1,1,1,1)
 		_RimColor("RimColor", Color) = (1,1,1,1)
-		_RimWidth("RimPower", Range(0.001, 1)) = 0.001
+		_RimPower("RimPower", Range(0.001, 1)) = 0.001
 	}
 	SubShader
 	{
@@ -42,7 +42,7 @@ Shader "Unlit/MyRim2"
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
 			float4 _RimColor;
-			float _RimWidth;
+			float _RimPower;
 			fixed3 _Color;
 
 			v2f vert(appdata v)
@@ -65,10 +65,10 @@ Shader "Unlit/MyRim2"
 				fixed3 diff = _Color.xyz*lambert*_LightColor0.xyz;
 
 				float fac = 1 - max(0, dot(worldNormal, worldViewDir));//得到法线和视角夹角因子
-				float wfac = 1 - _RimWidth;//得到宽度因子
+				float wfac = 1 - _RimPower;//得到宽度因子
 
 				fixed4 col = tex2D(_MainTex, i.uv);
-				col.rgb += pow(_RimColor*step(wfac, fac),5);//平方为了加重边缘颜色
+				col.rgb += _RimColor*step(wfac, fac);
 				col.rgb = col.rgb*diff.rgb;
 				return fixed4(col);
 			}

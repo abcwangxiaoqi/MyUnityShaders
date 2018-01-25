@@ -67,7 +67,7 @@
 			ENDCG
 		}
 
-		/*pass
+		pass
 		{
 			ZWrite On
 			ColorMask 0
@@ -76,8 +76,7 @@
 		//第二个pass 正常渲染 ZTest Less 
 		Pass
 		{
-			//ZTest Less   
-			//ZWrite On
+			ZTest LEqual   
 
 			CGPROGRAM
 			#pragma vertex vert
@@ -115,6 +114,6 @@
 				return col;
 			}
 			ENDCG
-		}*/
+		}
 	}
 }
