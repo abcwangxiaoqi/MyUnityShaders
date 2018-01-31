@@ -14,7 +14,7 @@
 		{
 			ZTest Greater//大于深度缓冲去中的 通过深度测试 所以可以隔墙看到物体
 			Blend One One
-			ZWrite Off
+			ZWrite On
 
 			CGPROGRAM
 			#pragma vertex vert
@@ -66,7 +66,7 @@
 		//第二个pass 正常渲染 ZTest Less 
 		Pass
 		{
-			ZTest LEqual
+			ZTest Less
 			ZWrite On
 
 			CGPROGRAM
