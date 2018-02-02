@@ -27,8 +27,7 @@ Shader "Custom/ReplacementShader" {
 
 		fixed4 frag(v2f IN) :COLOR{
 			float depth = Linear01Depth(IN.depth.x/IN.depth.y);
-			fixed4 color = fixed4(depth,0,0,1);
-			return color;
+			return depth;
 		}
 		ENDCG
 	}

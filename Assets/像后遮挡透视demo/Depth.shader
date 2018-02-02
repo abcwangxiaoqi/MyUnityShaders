@@ -27,9 +27,9 @@ Shader "Esfog/OutLine/Depth"
                 return o;
             }
 
-            half4 frag(v2f i) : COLOR 
+            fixed4 frag(v2f i) : COLOR 
             {
-                half x= Linear01Depth(i.depth.x/i.depth.y);
+                fixed x= Linear01Depth(i.depth.x/i.depth.y);
                 return half4(x, x, x, x);
             }
             ENDCG

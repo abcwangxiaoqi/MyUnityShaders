@@ -11,6 +11,10 @@ public class SetReplacementShader : MonoBehaviour {
 		
 	}
 	
+	void OnRenderImage(RenderTexture source,RenderTexture destination)
+	{
+
+	}
 	// Update is called once per frame
 	void Update () {
 		

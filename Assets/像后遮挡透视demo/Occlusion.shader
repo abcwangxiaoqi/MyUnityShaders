@@ -16,13 +16,18 @@
             #include "UnityCG.cginc"
 
             uniform sampler2D _MainTex;
-            uniform sampler2D _CameraDepthTexture;
+            sampler2D _CameraDepthTexture;
             uniform float4 _OutLineColor;
             
             float4 frag(v2f_img i):COLOR
             {
-                float playerDepth = tex2D(_MainTex,i.uv);
-                float bufferDepth = UNITY_SAMPLE_DEPTH(tex2D(_CameraDepthTexture,i.uv));
+                float playerDepth = Linear01Depth(tex2D(_MainTex,i.uv));
+
+                float depth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv);
+				float bufferDepth = Linear01Depth(depth);
+
+                //float bufferDepth =Linear01Depth(tex2D(_CameraDepthTexture,i.uv));
+                
                 float4 resColor = float4(0,0,0,0);
                 if((playerDepth < 1.0) && (playerDepth- bufferDepth)>0.0002)
                 {

@@ -3,6 +3,16 @@
 #pragma exclude_renderers gles
 #define MY_CG_INCLUDE
 
+	/*
+	获取深度值 
+	为什么要1-d ？
+	因为 深度越深，越接近黑色，就越趋近于0；深度越潜，越接近白色，就越趋近于1	
+	*/
+	inline float getDepth(sampler2D Tex,float2 uv)
+	{
+		return 1-Linear01Depth(UNITY_SAMPLE_DEPTH(tex2D(Tex, uv)));
+	}
+
 	inline float3 normalToClip(in float3 normal)
 	{
 		
