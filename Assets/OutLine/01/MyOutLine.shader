@@ -27,7 +27,7 @@ Shader "Unlit/MyOutLine"
 
 			CGPROGRAM
 			#include "UnityCG.cginc"
-			#include "../CommonCg/MyCgInclude.cginc"
+			#include "../../CommonCg/MyCgInclude.cginc"
 			fixed4 _OutlineCol;
 			float _OutlineFactor;
 
