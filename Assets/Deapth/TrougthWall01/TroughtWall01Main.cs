@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //[ExecuteInEditMode]
-public class Main : MonoBehaviour {
+public class TroughtWall01Main : MonoBehaviour {
     
      RenderTexture playerRT;
      RenderTexture wallRT;
@@ -11,12 +11,15 @@ public class Main : MonoBehaviour {
     public Camera playerCam;
     public Camera wallCam;
 
-	public Material depthMat;
+	public Material Mat;
 
 	void Start () {
 
         playerRT = RenderTexture.GetTemporary (Screen.width,Screen.height,0);
         wallRT = RenderTexture.GetTemporary (Screen.width,Screen.height,0);
+
+        Mat.SetTexture("_PlayerTex",playerRT);
+        Mat.SetTexture("_WallTex",wallRT);
         
         playerCam.enabled=true;
 		playerCam.targetTexture=playerRT;
@@ -29,8 +32,6 @@ public class Main : MonoBehaviour {
 	
     void OnRenderImage(RenderTexture src, RenderTexture des)
     {
-        depthMat.SetTexture("_PlayerTex",playerRT);
-        depthMat.SetTexture("_WallTex",wallRT);
-        Graphics.Blit(src, des, depthMat);
+        Graphics.Blit(src, des, Mat);
     }
 }

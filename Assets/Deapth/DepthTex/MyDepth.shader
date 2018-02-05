@@ -1,10 +1,8 @@
-﻿Shader "Unlit/duibi"
+﻿Shader "Unlit/MyDepth"
 {
 	Properties
 	{
 		_MainTex ("Texture", 2D) = "white" {}
-		_PlayerTex ("Texture", 2D) = "white" {}
-		_WallTex ("Texture", 2D) = "white" {}
 	}
 	SubShader
 	{
@@ -18,7 +16,8 @@
 			#pragma fragment frag
 			
 			#include "UnityCG.cginc"
-			#include "../CommonCg/MyCgInclude.cginc"
+
+			
 
 			struct appdata
 			{
@@ -31,9 +30,9 @@
 				float2 uv : TEXCOORD0;
 				float4 vertex : SV_POSITION;
 			};
+
 			sampler2D _MainTex;
-			sampler2D _PlayerTex;
-			sampler2D _WallTex;
+			sampler2D _CameraDepthTexture;
 			float4 _MainTex_ST;
 			
 			v2f vert (appdata v)
@@ -46,14 +45,9 @@
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float player =getDepth(_PlayerTex,i.uv);
-				float wall=getDepth(_WallTex,i.uv);
-				
-				if(player>0 & wall>0 & player>wall)
-				{
-					return fixed4(1,0,0,1);
-				}
-				return tex2D(_MainTex,i.uv);
+				float depth = UNITY_SAMPLE_DEPTH(tex2D(_CameraDepthTexture, i.uv));
+				float linear01Depth = Linear01Depth(depth);
+				return linear01Depth;
 			}
 			ENDCG
 		}
