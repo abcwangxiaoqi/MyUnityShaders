@@ -13,6 +13,14 @@
 		return 1-Linear01Depth(UNITY_SAMPLE_DEPTH(tex2D(Tex, uv)));
 	}
 
+	//视角与法线夹角
+	inline float DotViewAndNormal(in float3 worldNormal,in float3 worldPos)
+	{
+		float3 wNormal=normalize(worldNormal);
+		float3 viewDir=normalize(UnityWorldSpaceViewDir(worldPos));
+		return dot(wNormal,viewDir);
+	}
+
 	inline float3 normalToClip(in float3 normal)
 	{
 		

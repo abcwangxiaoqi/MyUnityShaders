@@ -2,16 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[ExecuteInEditMode]
-public class TroughtWall01Main : MonoBehaviour {
+//[ExecuteInEditMode]
+public class TroughtWall03Main : MonoBehaviour {
     
-     RenderTexture playerRT;
-     RenderTexture wallRT;
-
+    RenderTexture playerRT;
+    RenderTexture wallRT;
     public Camera playerCam;
     public Camera wallCam;
-
 	public Material Mat;
+
+    public Color outline;
+
+    [Range(0.1f,1)]
+    public float Intensity=0.5f;
 
 	void Start () {
 
@@ -23,7 +26,7 @@ public class TroughtWall01Main : MonoBehaviour {
         
         playerCam.enabled=true;
 		playerCam.targetTexture=playerRT;
-		playerCam.SetReplacementShader(Shader.Find("Custom/ReplacementShader"),null);
+		playerCam.SetReplacementShader(Shader.Find("Unlit/TWReplaceShader"),null);
 
         wallCam.enabled=true;
 		wallCam.targetTexture=wallRT;
@@ -32,6 +35,8 @@ public class TroughtWall01Main : MonoBehaviour {
 	
     void OnRenderImage(RenderTexture src, RenderTexture des)
     {
+        Mat.SetFloat("_Intensity",Intensity);
+        Mat.SetColor("_OutLineColor",outline);
         Graphics.Blit(src, des, Mat);
     }
 }
