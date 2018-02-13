@@ -49,9 +49,13 @@
 			fixed4 frag (v2f i) : SV_Target
 			{
 				float4 col=tex2D(_MainTex,i.uv);
-				float player =getDepth(_PlayerTex,i.uv);
-				float wall=getDepth(_WallTex,i.uv);
-				float nvfac=tex2D(_PlayerTex,i.uv).w;
+				float4 player=tex2D(_PlayerTex,i.uv);
+				float4 wall=tex2D(_WallTex,i.uv);
+
+				float playerDep=player.r;
+				float wallDep=wall.r;
+
+				float nvfac=player.a;
 
 				/* 原始代码片段
 				if(player>wall & _Intensity>nvfac)
@@ -62,7 +66,7 @@
 				*/			
 
 				/*改造后片段 用step代替 if 提高性能*/
-				float fac=step(player,wall);
+				float fac=step(playerDep,wallDep);
 				float outlinefac=step(_Intensity,nvfac);	
 				float fact=min(1,fac+outlinefac);
 				return lerp(float4(_OutLineColor,1),col,fact);		

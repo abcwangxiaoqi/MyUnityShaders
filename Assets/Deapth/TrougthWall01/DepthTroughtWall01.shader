@@ -46,8 +46,8 @@
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float player =getDepth(_PlayerTex,i.uv);
-				float wall=getDepth(_WallTex,i.uv);
+				float player =tex2D(_PlayerTex,i.uv).r;
+				float wall=tex2D(_WallTex,i.uv).r;
 				
 				if(player>0 & wall>0 & player>wall)
 				{

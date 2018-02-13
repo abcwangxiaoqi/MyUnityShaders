@@ -9,9 +9,8 @@ public class SampleBlurProMain : MonoBehaviour {
 	[Range(1,10)]
 	public float BlurRadius;
 
-    //降分辨率  
-	[Range(0.8f,1)]
-    public float Sample = 1;  
+	[Range(0,6), Tooltip("[降采样次数]向下采样的次数。此值越大,则采样间隔越大,需要处理的像素点越少,运行速度越快。")] 
+	public int DownSampleNum = 2;  
 
     //迭代次数  
 	[Range(1,5)]
@@ -33,8 +32,8 @@ public class SampleBlurProMain : MonoBehaviour {
 		也就是用上一次模糊的输出作为下一次模糊的输入，迭代之后的模糊效果更加明显
 		 */
 		
-		int width=(int)(Screen.width*Sample);
-		int height=(int)(Screen.height*Sample);
+		int width=Screen.width>>DownSampleNum;
+		int height=Screen.height>>DownSampleNum;
 		RenderTexture RT1=RenderTexture.GetTemporary(width,height,0);	
 		RenderTexture RT2=RenderTexture.GetTemporary(width,height,0);			
 
