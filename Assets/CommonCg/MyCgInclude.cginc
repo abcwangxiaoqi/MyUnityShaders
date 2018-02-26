@@ -1,6 +1,9 @@
 #ifndef MY_CG_INCLUDE
 // Upgrade NOTE: excluded shader from OpenGL ES 2.0 because it uses non-square matrices
 #pragma exclude_renderers gles
+
+#include "Lighting.cginc"  
+
 #define MY_CG_INCLUDE
 
 	/*
@@ -176,7 +179,7 @@
 	inline float3 Lambert_DiffLightAmbient(in float3 worldNormal,in float3 worldPos,in float3 diffuse,in float3 ambient)
 	{
 		float3 lambert=Lambert(worldNormal,worldPos);
-		return lambert*diffuse*unity_LightColor0.xyz+ambient;
+		return lambert*diffuse*_LightColor0.xyz+ambient;
 	}
 
 	//half lambert light model
@@ -191,7 +194,7 @@
 	inline float3 HalfLambert_DiffLightAmbient(in float3 worldNormal,in float3 worldPos,in float3 diffuse,in float3 ambient)
 	{
 		float3 lambert=HalfLambert(worldNormal,worldPos);
-		return lambert*diffuse*unity_LightColor0.xyz+ambient;
+		return lambert*diffuse*_LightColor0.xyz+ambient;
 	}
 
 	//unity 自带环境光

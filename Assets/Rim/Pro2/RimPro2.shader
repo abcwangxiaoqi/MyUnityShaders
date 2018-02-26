@@ -20,6 +20,7 @@
 			#pragma fragment frag
 
 			#include "UnityCG.cginc"
+			#include "../../CommonCg/MyCgInclude.cginc"
 
 			struct appdata
 			{
@@ -53,20 +54,6 @@
 				o.worldPos=mul(unity_ObjectToWorld,v.vertex);
 				return o;
 			}
-
-			float3 HalfLambert(float3 worldNormal,float3 worldPos)
-			{
-				worldNormal=normalize(worldNormal);
-				float3 worldLightDir=normalize(UnityWorldSpaceLightDir(worldPos));
-				fixed3 lambert =  0.5 * dot(worldNormal, worldLightDir) + 0.5;;  
-				return lambert;
-			}
-
-			float3 HalfLambert_DiffLightAmbient(float3 worldNormal,float3 worldPos,float3 diffuse,float3 ambient)
-			{
-				float3 lambert=HalfLambert(worldNormal,worldPos);				
-				return lambert*diffuse*unity_LightColor0.xyz+ambient;
-			}
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
@@ -78,14 +65,14 @@
 				float flag=step(_RimFact,fac);				
 
 				// sample the texture
+				
 				fixed4 col = tex2D(_MainTex, i.uv);
-				float3 diffuse=HalfLambert_DiffLightAmbient(worldNormal,worldPos,_Diffuse,float3(1,1,1));
+				float3 diffuse=HalfLambert_DiffLightAmbient(worldNormal,worldPos,_Diffuse,float3(0,0,0));
 				col.xyz*=diffuse;
 
-				_RimColor=_RimColor*(1-_RimColorFact)+col.xyz*_RimColorFact;
-				_RimColor*=(1-flag);			
+				_RimColor=lerp(_RimColor,col,_RimColorFact);
 
-				col.xyz=col.xyz*flag+_RimColor;				
+				col.xyz=lerp(col,_RimColor,1-flag);			
 				
 				return col;
 			}
