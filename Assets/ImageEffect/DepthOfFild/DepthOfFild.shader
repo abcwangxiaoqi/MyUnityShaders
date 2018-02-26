@@ -158,6 +158,7 @@
 		half4 color = tex2D(_MainTex,uv);
 		half4 blur=tex2D(_BlurTex,uv);
 
+
 		float yz=1-saturate(abs(camDepth-_FieldDepth));
 
 		return lerp(color,blur,yz);
