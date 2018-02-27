@@ -1,7 +1,8 @@
 #ifndef MY_CG_INCLUDE
 // Upgrade NOTE: excluded shader from OpenGL ES 2.0 because it uses non-square matrices
 #pragma exclude_renderers gles
-#include "Lighting.cginc"
+
+#include "Lighting.cginc"  
 
 #define MY_CG_INCLUDE
 
@@ -178,7 +179,7 @@
 	inline float3 Lambert_DiffLightAmbient(in float3 worldNormal,in float3 worldPos,in float3 diffuse,in float3 ambient)
 	{
 		float3 lambert=Lambert(worldNormal,worldPos);
-		return lambert*diffuse*unity_LightColor0.xyz+ambient;
+		return lambert*diffuse*_LightColor0.xyz+ambient;
 	}
 
 	//half lambert light model
@@ -193,21 +194,13 @@
 	inline float3 HalfLambert_DiffLightAmbient(in float3 worldNormal,in float3 worldPos,in float3 diffuse,in float3 ambient)
 	{
 		float3 lambert=HalfLambert(worldNormal,worldPos);
-		return lambert*diffuse*unity_LightColor0.xyz+ambient;
+		return lambert*diffuse*_LightColor0.xyz+ambient;
 	}
 
 	//unity 自带环境光
 	inline float3 unityAmbient(in float3 diffuse)
 	{
 		return UNITY_LIGHTMODEL_AMBIENT.xyz * diffuse.xyz;
-	}
-
-	//获取菲涅尔系数 这个并不是标准的菲尼尔公式 是 经验公式 标准的菲涅尔计算量太大
-	//fresnel = fresnel基础值 + fresnel缩放量*pow( 1 - dot( N, V ), 5 )
-	inline float getFresnel(in float base,in float scale,in float3 worldNoamrl,in float3 worldPos,in float indensity)
-	{
-		float fresnel = base + scale*pow(1 - DotViewAndNormal(worldNoamrl, worldPos), indensity);
-		return fresnel;
 	}
 
 #endif
