@@ -65,6 +65,8 @@
 
 	/*
 	2d 旋转矩阵
+	cosN -sinN
+	sinN cosN
 	*/
 	inline float2x2 twoDRoundMatrix(in float angle)
 	{
