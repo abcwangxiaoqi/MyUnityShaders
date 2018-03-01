@@ -70,9 +70,10 @@
 
 				fixed4 col = tex2D(_MainTex, i.uv);
 
-				fixed4 burn=tex2D(_Noise,i.uv);
+				fixed4 burn = tex2D(_Noise,i.uv);
 
-				yz=yz*_DistanceEffect+burn.r*(1-_DistanceEffect);//因子和噪声混合
+				yz=lerp(burn.r,yz,_DistanceEffect);
+				
 				float clipV=yz-_Progress;
 
 				clip(clipV);//剔除 确定没有的区域	
