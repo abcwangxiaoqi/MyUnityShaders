@@ -65,7 +65,7 @@
 				float3 worldPos=i.worldPos;
 
 				float3 diffuse=HalfLambert(worldNormal,worldPos);//半兰伯特光照
-				col.xyz*=diffuse;
+				col.xyz*=diffuse;				
 
 				float fresnel=getFresnel(_fresnelBase,_fresnelScale,worldNormal,worldPos,_fresnelIndensity);
 				col.rgb += lerp(col.rgb, _fresnelColor, fresnel);

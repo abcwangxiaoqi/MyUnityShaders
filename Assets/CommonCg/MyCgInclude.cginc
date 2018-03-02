@@ -205,4 +205,15 @@
 		return UNITY_LIGHTMODEL_AMBIENT.xyz * diffuse.xyz;
 	}
 
+	//菲涅尔系数 一种经验公式
+	/*
+	由于真实的菲尼尔公式计算量较多。在游戏里往往会用简化版的公式来提升效率达到近似的效果
+	fresnel = fresnel基础值 + fresnel缩放量*pow( 1 - dot( N, V ), 5 )
+	*/
+	inline float getFresnel(in float fresnelBase,in float fresnelScale,in float3 worldNormal,in float3 worldPos,in float fresnelIndensity)
+	{
+		float f=fresnelBase+fresnelScale*pow(1-DotViewAndNormal(worldNormal,worldPos),fresnelIndensity);
+		return f;
+	}
+
 #endif
