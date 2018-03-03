@@ -23,7 +23,7 @@ Shader "Unlit/MyOutLine"
 		//剔除正面，只渲染背面，对于大多数模型适用，不过如果需要背面的，就有问题了
 			Cull Front
 			
-			Offset 1,1 //背面向z轴方向 便宜
+			Offset 1,1 //背面向z轴方向 偏移
 
 			CGPROGRAM
 			#include "UnityCG.cginc"

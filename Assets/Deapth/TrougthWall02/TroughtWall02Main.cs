@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//[ExecuteInEditMode]
+[ExecuteInEditMode]
 public class TroughtWall02Main : MonoBehaviour {
     
      RenderTexture playerRT;

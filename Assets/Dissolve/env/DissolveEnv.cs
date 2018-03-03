@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[ExecuteInEditMode]
 public class DissolveEnv : MonoBehaviour
 {
-    public Vector3 dissolveStartPoint;
+    public Vector3 dissolveEndPoint;
     [Range(0, 1)]
     public float Progress = 0;
     [Range(0, 1)]
@@ -25,7 +26,7 @@ public class DissolveEnv : MonoBehaviour
         MeshRenderer[] meshRenderers = GetComponentsInChildren<MeshRenderer>();
         for (int i = 0; i < meshRenderers.Length; i++)
         {
-            meshRenderers[i].material.SetVector("_Start", dissolveStartPoint);
+            meshRenderers[i].material.SetVector("_Start", dissolveEndPoint);
             meshRenderers[i].material.SetFloat("_MaxDistance", maxDistance);
         }
     }
@@ -48,7 +49,7 @@ public class DissolveEnv : MonoBehaviour
         for (int i = 0; i < vertices.Length; i++)
         {
             Vector3 vert = vertices[i];
-            float distance = (vert - dissolveStartPoint).magnitude;
+            float distance = (vert - dissolveEndPoint).magnitude;
             if (distance > maxDistance)
                 maxDistance = distance;
         }

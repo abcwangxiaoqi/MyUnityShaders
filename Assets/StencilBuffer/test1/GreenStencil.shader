@@ -13,11 +13,11 @@
 		{
 			Stencil
 			{
-				Ref 2
-				Comp equal
+				Ref 2//模板对比值2
+				Comp equal//对比条件 等于
 				pass keep
-				Fail decrWrap
-				ZFail IncrSat
+				Fail decrWrap//模板测试失败 减
+				ZFail IncrSat//深度测试失败 加
 			}
 
 			CGPROGRAM

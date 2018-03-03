@@ -49,9 +49,10 @@ public class OutlineMain : MonoBehaviour
 	{		
 		int width=(int)(Screen.width*Sample);
 		int height=(int)(Screen.height*Sample);
-		blurRT=RenderTexture.GetTemporary(width,height,0);	
-		temp=RenderTexture.GetTemporary(width,height,0);			
 
+		#region 进行模糊处理
+		blurRT=RenderTexture.GetTemporary(width,height,0);	
+		temp=RenderTexture.GetTemporary(width,height,0);
 		Graphics.Blit(playerRT,blurRT);
 
 		//进行多次迭代
@@ -61,15 +62,13 @@ public class OutlineMain : MonoBehaviour
 			Graphics.Blit(blurRT,temp,blurMaterial);
 			Graphics.Blit(temp,blurRT);
 		}		
-
 		RenderTexture.ReleaseTemporary(temp);
+		#endregion		
 
 		outlineMaterial.SetTexture("_PlayerMap", playerRT);
 		outlineMaterial.SetTexture("_BlurMap", blurRT);
 		outlineMaterial.SetColor("_OutlineColor", outlineColor);
-
-		Graphics.Blit(src, des, outlineMaterial);
-		
+		Graphics.Blit(src, des, outlineMaterial);		
 		RenderTexture.ReleaseTemporary(blurRT);		
 	}
 }

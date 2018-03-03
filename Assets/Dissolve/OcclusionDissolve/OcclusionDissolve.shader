@@ -63,18 +63,26 @@
 			fixed4 frag (v2f i) : SV_Target
 			{
 				// sample the texture
+				//透视除法 求得屏幕坐标
 				float2 screenPos=i.screenPos.xy/i.screenPos.w;
 				float3 worldPos=i.worldPos;
+
+				//摄像机和当前像素的距离
 				float dis=length(worldPos-_WorldSpaceCameraPos);
 
+				//当前像素到屏幕中心点的距离
 				float2 dir=float2(0.5,0.5)-screenPos;
 				float distance=length(dir);// 0~0.5
 				
+				//大于剔除距离 则不进行溶解
 				float DisFlag=step(dis,_ClipDistance);
+
+				//大于溶解半径 则不进行溶解
 				float RadiusFlag=step(distance,_DissolveRadius);
 
 				//噪声图 采样
 				fixed3 burn = tex2D(_NoiseMap, i.uv).rgb;	
+				
 				//根据 噪声r 和 距离范围 clip
 				float clipV=burn.r - DisFlag*RadiusFlag*(1-distance/_DissolveRadius);		
 				clip(clipV);
