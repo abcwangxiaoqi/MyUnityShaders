@@ -2,13 +2,13 @@
 {
 	Properties
 	{
-		_MainCol("Color", Color) = (0.8,0.8,0.8,1)//自身颜色
+		_MainTex("MainTex", 2D) = "white" {}
 		_ShadowCol("Shadow Color" , Color) = (0,0,0,1)//阴影颜色
 		_LightDir("Light Diretion" , vector) = (-1,1,0,0.05)//灯光方向
 		_ShadowFalloff("Shadow Falloff" , Range(0.01,1)) = 1//阴影衰减
 	}
-		SubShader
-	{
+	SubShader
+	{		
 		Tags { "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
 		LOD 100
 
@@ -22,28 +22,35 @@
 			#pragma fragment frag
 
 			#include "UnityCG.cginc"
-			fixed4 _MainCol;
+
+			sampler2D _MainTex;
+			float4 _MainTex_ST;
 
 			struct appdata
 			{
 				float4 vertex : POSITION;
+				float2 uv : TEXCOORD0;
 			};
 
 			struct v2f
 			{
 				float4 vertex : SV_POSITION;
+				float2 uv : TEXCOORD0;
 			};
 
 			v2f vert(appdata v)
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 				return o;
 			}
 
 			fixed4 frag(v2f i) : SV_Target
 			{
-				return _MainCol;
+				// sample the texture
+				fixed4 col = tex2D(_MainTex, i.uv);
+				return col;
 			}
 			ENDCG
 		}
@@ -102,7 +109,8 @@
 					float3 lightDir = normalize(_LightDir.xyz);
 
 					//阴影的世界空间坐标
-					shadowPos.y = _LightDir.w;
+					//公式根据 三角形 相似 推到而来
+					shadowPos.y = _LightDir.w;					
 					shadowPos.xz = wPos.xz - lightDir.xz * (wPos.y - _LightDir.w) / lightDir.y;
 
 					//低于地面的部分不计算阴影
@@ -123,6 +131,7 @@
 					o.vertex = UnityWorldToClipPos(shadowPos);
 
 					//得到中心点世界坐标
+					//unity_ObjectToWorld 模型矩阵的4个w分量分别代表 中心点的xyzw
 					float3 center = float3(unity_ObjectToWorld[0].w , _LightDir.w , unity_ObjectToWorld[2].w);
 
 					//计算阴影衰减
@@ -141,6 +150,7 @@
 				}
 				ENDCG
 			}
+
 
 	}
 }
