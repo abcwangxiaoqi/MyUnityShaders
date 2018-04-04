@@ -66,7 +66,7 @@
 
 				//位移后的本地坐标
 				float3 localPos = center + rightDir * centerOffs.x + upDir * centerOffs.y + normalDir * centerOffs.z;
-				//float3 localPos =bill(rightDir,upDir,normalDir,centerOffs);
+				//float3 localPos =center+bill(rightDir,upDir,normalDir,centerOffs);
               
 				o.vertex = UnityObjectToClipPos(float4(localPos, 1));
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
