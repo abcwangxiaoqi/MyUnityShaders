@@ -68,7 +68,7 @@
 				col.xyz*=diffuse;				
 
 				float fresnel=getFresnel(_fresnelBase,_fresnelScale,worldNormal,worldPos,_fresnelIndensity);
-				col.rgb += lerp(col.rgb, _fresnelColor, fresnel);
+				col.rgb = lerp(col.rgb, _fresnelColor, fresnel);
 
 				return col;
 			}

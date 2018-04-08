@@ -1,42 +1,26 @@
-﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
-// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
-Shader "Unlit/GerstnerWave"
+﻿Shader "Unlit/GerstnerWater"
 {
 	Properties
 	{
-		_MainTex ("Texture", 2D) = "black" {}
-
-		// example 1(1个波的高度y)
-		/*
-		_GAmplitude ("Wave Amplitude", float) = 0.3
-		_GFrequency ("Wave Frequency", float) = 1.3
-		_GSteepness ("Wave Steepness", float) = 1.0
-		_GSpeed ("Wave Speed", float) = 1.2
-		_GDirection ("Wave Direction", Vector) = (0.3 ,0.85, 0.85, 0.25)
-		*/
-
-		// example 2 (4个波合成的高度y)
-		/*
-		_GAmplitude ("Wave Amplitude", Vector) = (0.3 ,0.35, 0.25, 0.25)
-		_GFrequency ("Wave Frequency", Vector) = (1.3, 1.35, 1.25, 1.25)
-		_GSteepness ("Wave Steepness", Vector) = (1.0, 1.0, 1.0, 1.0)
-		_GSpeed ("Wave Speed", Vector) = (1.2, 1.375, 1.1, 1.5)
-		_GDirectionAB ("Wave Direction", Vector) = (0.3 ,0.85, 0.85, 0.25)
-		_GDirectionCD ("Wave Direction", Vector) = (0.1 ,0.9, 0.5, 0.5)
-		*/
-
-		_GAmplitude ("Wave Amplitude", Vector) = (0.3 ,0.35, 0.25, 0.25)
-		_GFrequency ("Wave Frequency", Vector) = (1.3, 1.35, 1.25, 1.25)
-		_GSteepness ("Wave Steepness", Vector) = (1.0, 1.0, 1.0, 1.0)
-		_GSpeed ("Wave Speed", Vector) = (1.2, 1.375, 1.1, 1.5)
-		_GDirectionAB ("Wave Direction", Vector) = (0.3 ,0.85, 0.85, 0.25)
-		_GDirectionCD ("Wave Direction", Vector) = (0.1 ,0.9, 0.5, 0.5)
+		_Color("Water Color",Color)=(1,1,1,1)
+		_Q("波尖",vector)=(1,1,1,1)
+		_A("振幅",vector)=(1,1,1,1)
+		_Dir("运动方向",vector)=(1,1,1,1)
+		_Dir1("运动方向1",vector)=(1,1,1,1)
+		_Dir2("运动方向2",vector)=(1,1,1,1)
+		_Dir3("运动方向3",vector)=(1,1,1,1)
+		_W("频率",vector)=(1,1,1,1)
+		_XZ("相位",vector)=(1,1,1,1)
 	}
 	SubShader
 	{
-		Tags { "RenderType"="Opaque" }
+		Tags { "RenderType"="Transparent" }
 		LOD 100
+
+		
+		Blend SrcAlpha OneMinusSrcAlpha
+
+		ZWrite Off
 
 		Pass
 		{
@@ -56,160 +40,79 @@ Shader "Unlit/GerstnerWave"
 			{
 				float2 uv : TEXCOORD0;
 				float4 vertex : SV_POSITION;
+				float3 normal:NORMAL;
 			};
 
-			sampler2D _MainTex;
-			float4 _MainTex_ST;
-
-			// example 1 (1个波的高度y)
-			/*
-			float _GAmplitude;
-			float _GFrequency;
-			float _GSteepness;
-			float _GSpeed;
-			Vector _GDirection;
-			*/
-
-			// example 2 (4个波合成的高度y)
-			/*
-			float4 _GAmplitude;
-			float4 _GFrequency;
-			float4 _GSteepness;
-			float4 _GSpeed;
-			Vector _GDirectionAB;
-			Vector _GDirectionCD;
-			*/
-
-			// example 3 (结合GerstnerWave的公式，4个波合成 x,z的偏移，y的高度)
-			///*
-			float4 _GAmplitude;
-			float4 _GFrequency;
-			float4 _GSteepness;
-			float4 _GSpeed;
-			Vector _GDirectionAB;
-			Vector _GDirectionCD;
-			//*/
+			vector _Q;
+			vector _A;
+			vector _Dir;
+			vector _Dir1;
+			vector _Dir2;
+			vector _Dir3;
+			vector _W;
+			vector _XZ;
+			float4 _Color;
 			
-			// example 1(1个波的高度y)
-			/*
-			half CalculateWavesY(float3 worldPos)
+			v2f vert (appdata v)
 			{
-				half dotDir = dot(_GDirection.xy, worldPos.xz) * _GFrequency;
-				half4 TIME = _Time.y * _GSpeed;
-				half SIN = sin(dotDir + TIME);
-				half y = _GAmplitude * SIN;
-				return y;
-			}
-			*/
+				v2f o;			
 
-			// example 2 (4个波合成的高度y)
-			/*
-			half CalculateWavesY_4(float3 worldPos)
-			{
-				half4 dotDir = _GFrequency * half4(dot(_GDirectionAB.xy, worldPos.xz), dot(_GDirectionAB.zw, worldPos.xz), 
-					dot(_GDirectionCD.xy, worldPos.xz), dot(_GDirectionCD.zw, worldPos.xz));
+				float4x4 _Dirs=(_Dir.x,_Dir.y,_Dir.z,_Dir.w,
+								_Dir1.x,_Dir1.y,_Dir1.z,_Dir1.w,
+								_Dir2.x,_Dir2.y,_Dir2.z,_Dir2.w,
+								_Dir3.x,_Dir3.y,_Dir3.z,_Dir3.w);	
 
-				half4 TIME = _Time.yyyy * _GSpeed;
-				// 这里sin是针对half4执行的，所有得到的就是sin((dotDir + TIME).x),sin((dotDir + TIME).y)...
-				half4 SIN = sin(dotDir + TIME);
+				//控制范围 不出现 环形波
+				float4 tempQ=float4(clamp(_Q[0],0,1/(_W[0]*_A[0])),
+									clamp(_Q[1],0,1/(_W[1]*_A[1])),
+									clamp(_Q[2],0,1/(_W[2]*_A[2])),
+									clamp(_Q[3],0,1/(_W[3]*_A[3])));
 
-				//half y = SIN.x * _GAmplitude.x + SIN.y * _GAmplitude.y + SIN.z * _GAmplitude.z + SIN.w * _GAmplitude.w;
-				// 上面的可以用下面的来替换
-				half y = dot(_GAmplitude, SIN);
+				float offsetX=v.vertex.x+
+								tempQ[0]*_A[0]*_Dir.x*cos(_W[0]*dot(_Dir,v.vertex)+_XZ[0]*_Time.y);
+								+tempQ[1]*_A[1]*_Dirs[1].x*cos(_W[1]*dot(_Dirs[1],v.vertex)+_XZ[1]*_Time.y)
+								+tempQ[2]*_A[2]*_Dirs[2].x*cos(_W[2]*dot(_Dirs[2],v.vertex)+_XZ[2]*_Time.y)
+								+tempQ[3]*_A[3]*_Dirs[3].x*cos(_W[3]*dot(_Dirs[3],v.vertex)+_XZ[3]*_Time.y);
 
-				return y;
-			}
-			*/
+				float offsetY=_A[0]*sin(_W[0]*dot(_Dirs[0],v.vertex)+_XZ[0]*_Time.y);
+								+_A[1]*sin(_W[1]*dot(_Dirs[1],v.vertex)+_XZ[1]*_Time.y)
+								+_A[2]*sin(_W[2]*dot(_Dirs[2],v.vertex)+_XZ[2]*_Time.y)
+								+_A[3]*sin(_W[3]*dot(_Dirs[3],v.vertex)+_XZ[3]*_Time.y);
 
-			// example 3 (结合GerstnerWave的公式，4个波合成 x,z的偏移，y的高度)
-			///*
-			half3 CalculateOffset4(float3 worldPos)
-			{
-				half4 dotDir = _GFrequency * half4(dot(_GDirectionAB.xy, worldPos.xz), dot(_GDirectionAB.zw, worldPos.xz), 
-					dot(_GDirectionCD.xy, worldPos.xz), dot(_GDirectionCD.zw, worldPos.xz));
+				float offsetZ=v.vertex.z+
+								tempQ[0]*_A[0]*_Dir.z*cos(_W[0]*dot(_Dir,v.vertex)+_XZ[0]*_Time.y);
+								+tempQ[1]*_A[1]*_Dirs[1].z*cos(_W[1]*dot(_Dirs[1],v.vertex)+_XZ[1]*_Time.y)
+								+tempQ[2]*_A[2]*_Dirs[2].z*cos(_W[2]*dot(_Dirs[2],v.vertex)+_XZ[2]*_Time.y)
+								+tempQ[3]*_A[3]*_Dirs[3].z*cos(_W[3]*dot(_Dirs[3],v.vertex)+_XZ[3]*_Time.y);
 
-				half4 TIME = _Time.yyyy * _GSpeed;
+				v.vertex=float4(offsetX,offsetY,offsetZ,v.vertex.w);
 
-				half4 SIN = sin(dotDir + TIME);
-				half y = dot(_GAmplitude, SIN);
+				float normalX=_Dirs[0].x*_W[0]*_A[0]*cos(_W[0]*dot(_Dirs[0],v.vertex)+_XZ[0]*_Time.y)
+								+_Dirs[1].x*_W[1]*_A[1]*cos(_W[1]*dot(_Dirs[1],v.vertex)+_XZ[1]*_Time.y)
+								+_Dirs[2].x*_W[2]*_A[2]*cos(_W[2]*dot(_Dirs[2],v.vertex)+_XZ[2]*_Time.y)
+								+_Dirs[3].x*_W[3]*_A[3]*cos(_W[3]*dot(_Dirs[3],v.vertex)+_XZ[3]*_Time.y);
+				
+				float normalY=tempQ[0]*_W[0]*_A[0]*sin(_W[0]*dot(_Dirs[0],v.vertex)+_XZ[0]*_Time.y)
+								+tempQ[1]*_W[1]*_A[1]*sin(_W[1]*dot(_Dirs[1],v.vertex)+_XZ[1]*_Time.y)
+								+tempQ[2]*_W[2]*_A[2]*sin(_W[2]*dot(_Dirs[2],v.vertex)+_XZ[2]*_Time.y)
+								+tempQ[3]*_W[3]*_A[3]*sin(_W[3]*dot(_Dirs[3],v.vertex)+_XZ[3]*_Time.y);
 
-				half4 COS = cos(dotDir + TIME);
+				float normalZ=_Dirs[0].z*_W[0]*_A[0]*cos(_W[0]*dot(_Dirs[0],v.vertex)+_XZ[0]*_Time.y)
+								+_Dirs[1].z*_W[1]*_A[1]*cos(_W[1]*dot(_Dirs[1],v.vertex)+_XZ[1]*_Time.y)
+								+_Dirs[2].z*_W[2]*_A[2]*cos(_W[2]*dot(_Dirs[2],v.vertex)+_XZ[2]*_Time.y)
+								+_Dirs[3].z*_W[3]*_A[3]*cos(_W[3]*dot(_Dirs[3],v.vertex)+_XZ[3]*_Time.y);
 
-				half4 xDir = half4(_GDirectionAB.x, _GDirectionAB.z, _GDirectionCD.x, _GDirectionCD.z);
-				half x = dot(half4(_GSteepness * _GAmplitude * xDir) , COS);
+				o.normal=float3(-normalX,1-normalY,-normalZ);
 
-				half4 zDir = half4(_GDirectionAB.y, _GDirectionAB.w, _GDirectionCD.y, _GDirectionCD.w);
-				half z = dot(half4(_GSteepness * _GAmplitude * zDir) , COS);
+				o.vertex = UnityObjectToClipPos(v.vertex);				
 
-				return half3(x, y, z);
-
-			}
-			//*/
-
-
-			// Unity3D StandAsset的,(结合GerstnerWave的公式，4个波合成 x,z的偏移，y的高度)
-			/*
-			half3 GerstnerOffset4_Official (half2 xzVtx, half4 steepness, half4 amp, half4 freq, half4 speed, half4 dirAB, half4 dirCD) 
-			{
-				half3 offsets;
-		
-				half4 AB = steepness.xxyy * amp.xxyy * dirAB.xyzw;
-				half4 CD = steepness.zzww * amp.zzww * dirCD.xyzw;
-		
-				half4 dotABCD = freq.xyzw * half4(dot(dirAB.xy, xzVtx), dot(dirAB.zw, xzVtx), dot(dirCD.xy, xzVtx), dot(dirCD.zw, xzVtx));
-				half4 TIME = _Time.yyyy * speed;
-		
-				half4 COS = cos (dotABCD + TIME);
-				half4 SIN = sin (dotABCD + TIME);
-		
-				offsets.x = dot(COS, half4(AB.xz, CD.xz));
-				offsets.z = dot(COS, half4(AB.yw, CD.yw));
-				offsets.y = dot(SIN, amp);
-
-				return offsets;			
-			}
-			*/
-
-			v2f vert (appdata_full v)
-			{
-				v2f o;
-
-				// example 1(1个波的高度y)
-				/*
-				// 传世界的就是有可能面片会缩放
-				half3 worldSpaceVertex = mul(_Object2World,(v.vertex)).xyz;
-				half3 vtxForAni = (worldSpaceVertex).xyz;
-				half y = CalculateWavesY(vtxForAni);
-				v.vertex.y += y;
-				*/
-
-				// example 2 (4个波合成的高度y)
-				/*
-				half3 worldSpaceVertex = mul(_Object2World,(v.vertex)).xyz;
-				half3 vtxForAni = (worldSpaceVertex).xyz;
-				half y = CalculateWavesY_4(vtxForAni);
-				v.vertex.y += y;
-				*/
-
-				// example 3 (结合GerstnerWave的公式，4个波合成 x,z的偏移，y的高度)
-				///*
-				half3 worldSpaceVertex = mul(unity_ObjectToWorld,(v.vertex)).xyz;
-				half3 vtxForAni = (worldSpaceVertex).xzz;
-				//float3 offset = GerstnerOffset4_Official(vtxForAni, _GSteepness, _GAmplitude, _GFrequency, _GSpeed, _GDirectionAB, _GDirectionCD);
-				half3 offset = CalculateOffset4(v.vertex);
-				v.vertex.xyz += offset.xyz;
-				//*/
-
-				o.vertex = UnityObjectToClipPos(v.vertex);
-				o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
 				return o;
 			}
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				// sample the texture
-				fixed4 col = tex2D(_MainTex, i.uv);
-				return col;
+				float3 normal=normalize(i.normal);
+				return float4(_Color.xyz,0.8);
 			}
 			ENDCG
 		}

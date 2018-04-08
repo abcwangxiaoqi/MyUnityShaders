@@ -25,6 +25,7 @@
 			#pragma fragment frag
 			
 			#include "UnityCG.cginc"
+			#include "../../CommonCg/MyCgInclude.cginc"
 
 			struct appdata
 			{
@@ -36,7 +37,8 @@
 			{
 				float2 uv : TEXCOORD0;
 				float4 vertex : SV_POSITION;
-				float3 normal:NORMAL;
+				float3 worldNormal:NORMAL;
+				float3 worldPos:TEXCOORD1;
 			};
 
 			vector _A;
@@ -57,33 +59,40 @@
 				_Dir2.x,_Dir2.y,_Dir2.z,_Dir2.w,
 				_Dir3.x,_Dir3.y,_Dir3.z,_Dir3.w);	
 
-				float yoffset=_A[0]*sin(dot(_Dirs[0],v.vertex)*_W[0]+_XZ[0]*_Time.y)
-								+_A[1]*sin(dot(_Dirs[1],v.vertex)*_W[1]+_XZ[1]*_Time.y)
-								+_A[2]*sin(dot(_Dirs[2],v.vertex)*_W[2]+_XZ[2]*_Time.y)
-								+_A[3]*sin(dot(_Dirs[3],v.vertex)*_W[3]+_XZ[3]*_Time.y);
+				float4 worldpos=mul(unity_ObjectToWorld,v.vertex);
 
-				v.vertex.y=yoffset;
+				float yoffset=_A[0]*sin(dot(_Dirs[0],worldpos)*_W[0]+_XZ[0]*_Time.y)
+								+_A[1]*sin(dot(_Dirs[1],worldpos)*_W[1]+_XZ[1]*_Time.y)
+								+_A[2]*sin(dot(_Dirs[2],worldpos)*_W[2]+_XZ[2]*_Time.y)
+								+_A[3]*sin(dot(_Dirs[3],worldpos)*_W[3]+_XZ[3]*_Time.y);
 
-				float normalX=_W[0]*_Dir.x*_A*cos(dot(_Dirs[0],v.vertex)*_W[0]+_XZ[0]*_Time.y)
-								+_W[1]*_Dir1.x*_A*cos(dot(_Dirs[1],v.vertex)*_W[1]+_XZ[1]*_Time.y)
-								+_W[2]*_Dir2.x*_A*cos(dot(_Dirs[2],v.vertex)*_W[2]+_XZ[2]*_Time.y)
-								+_W[3]*_Dir3.x*_A*cos(dot(_Dirs[3],v.vertex)*_W[3]+_XZ[3]*_Time.y);
+				worldpos.y=yoffset;
 
-				float normalZ=_W[0]*_Dir.z*_A*cos(dot(_Dirs[0],v.vertex)*_W[0]+_XZ[0]*_Time.y)
-								+_W[1]*_Dir1.z*_A*cos(dot(_Dirs[1],v.vertex)*_W[1]+_XZ[1]*_Time.y)
-								+_W[2]*_Dir2.z*_A*cos(dot(_Dirs[2],v.vertex)*_W[2]+_XZ[2]*_Time.y)
-								+_W[3]*_Dir3.z*_A*cos(dot(_Dirs[3],v.vertex)*_W[3]+_XZ[3]*_Time.y);
+				float normalX=_W[0]*_Dir.x*_A*cos(dot(_Dirs[0],worldpos)*_W[0]+_XZ[0]*_Time.y)
+								+_W[1]*_Dir1.x*_A*cos(dot(_Dirs[1],worldpos)*_W[1]+_XZ[1]*_Time.y)
+								+_W[2]*_Dir2.x*_A*cos(dot(_Dirs[2],worldpos)*_W[2]+_XZ[2]*_Time.y)
+								+_W[3]*_Dir3.x*_A*cos(dot(_Dirs[3],worldpos)*_W[3]+_XZ[3]*_Time.y);
 
-				o.normal=float3(-normalX,1,-normalZ);
-				o.vertex = UnityObjectToClipPos(v.vertex);				
+				float normalZ=_W[0]*_Dir.z*_A*cos(dot(_Dirs[0],worldpos)*_W[0]+_XZ[0]*_Time.y)
+								+_W[1]*_Dir1.z*_A*cos(dot(_Dirs[1],worldpos)*_W[1]+_XZ[1]*_Time.y)
+								+_W[2]*_Dir2.z*_A*cos(dot(_Dirs[2],worldpos)*_W[2]+_XZ[2]*_Time.y)
+								+_W[3]*_Dir3.z*_A*cos(dot(_Dirs[3],worldpos)*_W[3]+_XZ[3]*_Time.y);
 
+				v.vertex=mul(unity_WorldToObject,worldpos);
+
+				o.worldPos=worldpos;
+				o.worldNormal=float3(-normalX,1,-normalZ);				
+				o.vertex = mul(UNITY_MATRIX_VP,worldpos);	
 				return o;
 			}
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float3 normal=normalize(i.normal);
-				return float4(_Color.xyz,0.5);
+				float3 normal=normalize(i.worldNormal);
+
+
+
+				return float4(_Color.xyz,0.8);
 			}
 			ENDCG
 		}
