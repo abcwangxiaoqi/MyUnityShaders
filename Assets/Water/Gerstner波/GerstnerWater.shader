@@ -40,7 +40,8 @@
 			{
 				float2 uv : TEXCOORD0;
 				float4 vertex : SV_POSITION;
-				float3 normal:NORMAL;
+				float3 worldPos:TEXCOORD1;
+				float3 worldNormal:NORMAL;
 			};
 
 			vector _Q;
@@ -68,50 +69,56 @@
 									clamp(_Q[2],0,1/(_W[2]*_A[2])),
 									clamp(_Q[3],0,1/(_W[3]*_A[3])));
 
-				float offsetX=v.vertex.x+
-								tempQ[0]*_A[0]*_Dir.x*cos(_W[0]*dot(_Dir,v.vertex)+_XZ[0]*_Time.y);
-								+tempQ[1]*_A[1]*_Dirs[1].x*cos(_W[1]*dot(_Dirs[1],v.vertex)+_XZ[1]*_Time.y)
-								+tempQ[2]*_A[2]*_Dirs[2].x*cos(_W[2]*dot(_Dirs[2],v.vertex)+_XZ[2]*_Time.y)
-								+tempQ[3]*_A[3]*_Dirs[3].x*cos(_W[3]*dot(_Dirs[3],v.vertex)+_XZ[3]*_Time.y);
+				float4 worldPos=mul(unity_ObjectToWorld,v.vertex);
 
-				float offsetY=_A[0]*sin(_W[0]*dot(_Dirs[0],v.vertex)+_XZ[0]*_Time.y);
-								+_A[1]*sin(_W[1]*dot(_Dirs[1],v.vertex)+_XZ[1]*_Time.y)
-								+_A[2]*sin(_W[2]*dot(_Dirs[2],v.vertex)+_XZ[2]*_Time.y)
-								+_A[3]*sin(_W[3]*dot(_Dirs[3],v.vertex)+_XZ[3]*_Time.y);
+				worldPos.x=worldPos.x+
+								tempQ[0]*_A[0]*_Dir.x*cos(_W[0]*dot(_Dir,worldPos)+_XZ[0]*_Time.y);
+								+tempQ[1]*_A[1]*_Dirs[1].x*cos(_W[1]*dot(_Dirs[1],worldPos)+_XZ[1]*_Time.y)
+								+tempQ[2]*_A[2]*_Dirs[2].x*cos(_W[2]*dot(_Dirs[2],worldPos)+_XZ[2]*_Time.y)
+								+tempQ[3]*_A[3]*_Dirs[3].x*cos(_W[3]*dot(_Dirs[3],worldPos)+_XZ[3]*_Time.y);
 
-				float offsetZ=v.vertex.z+
-								tempQ[0]*_A[0]*_Dir.z*cos(_W[0]*dot(_Dir,v.vertex)+_XZ[0]*_Time.y);
-								+tempQ[1]*_A[1]*_Dirs[1].z*cos(_W[1]*dot(_Dirs[1],v.vertex)+_XZ[1]*_Time.y)
-								+tempQ[2]*_A[2]*_Dirs[2].z*cos(_W[2]*dot(_Dirs[2],v.vertex)+_XZ[2]*_Time.y)
-								+tempQ[3]*_A[3]*_Dirs[3].z*cos(_W[3]*dot(_Dirs[3],v.vertex)+_XZ[3]*_Time.y);
+				worldPos.y=_A[0]*sin(_W[0]*dot(_Dirs[0],worldPos)+_XZ[0]*_Time.y);
+								+_A[1]*sin(_W[1]*dot(_Dirs[1],worldPos)+_XZ[1]*_Time.y)
+								+_A[2]*sin(_W[2]*dot(_Dirs[2],worldPos)+_XZ[2]*_Time.y)
+								+_A[3]*sin(_W[3]*dot(_Dirs[3],worldPos)+_XZ[3]*_Time.y);
 
-				v.vertex=float4(offsetX,offsetY,offsetZ,v.vertex.w);
+				worldPos.z=worldPos.z+
+								tempQ[0]*_A[0]*_Dir.z*cos(_W[0]*dot(_Dir,worldPos)+_XZ[0]*_Time.y);
+								+tempQ[1]*_A[1]*_Dirs[1].z*cos(_W[1]*dot(_Dirs[1],worldPos)+_XZ[1]*_Time.y)
+								+tempQ[2]*_A[2]*_Dirs[2].z*cos(_W[2]*dot(_Dirs[2],worldPos)+_XZ[2]*_Time.y)
+								+tempQ[3]*_A[3]*_Dirs[3].z*cos(_W[3]*dot(_Dirs[3],worldPos)+_XZ[3]*_Time.y);
 
-				float normalX=_Dirs[0].x*_W[0]*_A[0]*cos(_W[0]*dot(_Dirs[0],v.vertex)+_XZ[0]*_Time.y)
-								+_Dirs[1].x*_W[1]*_A[1]*cos(_W[1]*dot(_Dirs[1],v.vertex)+_XZ[1]*_Time.y)
-								+_Dirs[2].x*_W[2]*_A[2]*cos(_W[2]*dot(_Dirs[2],v.vertex)+_XZ[2]*_Time.y)
-								+_Dirs[3].x*_W[3]*_A[3]*cos(_W[3]*dot(_Dirs[3],v.vertex)+_XZ[3]*_Time.y);
+				o.worldPos=worldPos;
+
+				o.vertex=mul(UNITY_MATRIX_VP,worldPos);
+
+				float normalX=_Dirs[0].x*_W[0]*_A[0]*cos(_W[0]*dot(_Dirs[0],worldPos)+_XZ[0]*_Time.y)
+								+_Dirs[1].x*_W[1]*_A[1]*cos(_W[1]*dot(_Dirs[1],worldPos)+_XZ[1]*_Time.y)
+								+_Dirs[2].x*_W[2]*_A[2]*cos(_W[2]*dot(_Dirs[2],worldPos)+_XZ[2]*_Time.y)
+								+_Dirs[3].x*_W[3]*_A[3]*cos(_W[3]*dot(_Dirs[3],worldPos)+_XZ[3]*_Time.y);
 				
-				float normalY=tempQ[0]*_W[0]*_A[0]*sin(_W[0]*dot(_Dirs[0],v.vertex)+_XZ[0]*_Time.y)
-								+tempQ[1]*_W[1]*_A[1]*sin(_W[1]*dot(_Dirs[1],v.vertex)+_XZ[1]*_Time.y)
-								+tempQ[2]*_W[2]*_A[2]*sin(_W[2]*dot(_Dirs[2],v.vertex)+_XZ[2]*_Time.y)
-								+tempQ[3]*_W[3]*_A[3]*sin(_W[3]*dot(_Dirs[3],v.vertex)+_XZ[3]*_Time.y);
+				float normalY=tempQ[0]*_W[0]*_A[0]*sin(_W[0]*dot(_Dirs[0],worldPos)+_XZ[0]*_Time.y)
+								+tempQ[1]*_W[1]*_A[1]*sin(_W[1]*dot(_Dirs[1],worldPos)+_XZ[1]*_Time.y)
+								+tempQ[2]*_W[2]*_A[2]*sin(_W[2]*dot(_Dirs[2],worldPos)+_XZ[2]*_Time.y)
+								+tempQ[3]*_W[3]*_A[3]*sin(_W[3]*dot(_Dirs[3],worldPos)+_XZ[3]*_Time.y);
 
-				float normalZ=_Dirs[0].z*_W[0]*_A[0]*cos(_W[0]*dot(_Dirs[0],v.vertex)+_XZ[0]*_Time.y)
-								+_Dirs[1].z*_W[1]*_A[1]*cos(_W[1]*dot(_Dirs[1],v.vertex)+_XZ[1]*_Time.y)
-								+_Dirs[2].z*_W[2]*_A[2]*cos(_W[2]*dot(_Dirs[2],v.vertex)+_XZ[2]*_Time.y)
-								+_Dirs[3].z*_W[3]*_A[3]*cos(_W[3]*dot(_Dirs[3],v.vertex)+_XZ[3]*_Time.y);
+				float normalZ=_Dirs[0].z*_W[0]*_A[0]*cos(_W[0]*dot(_Dirs[0],worldPos)+_XZ[0]*_Time.y)
+								+_Dirs[1].z*_W[1]*_A[1]*cos(_W[1]*dot(_Dirs[1],worldPos)+_XZ[1]*_Time.y)
+								+_Dirs[2].z*_W[2]*_A[2]*cos(_W[2]*dot(_Dirs[2],worldPos)+_XZ[2]*_Time.y)
+								+_Dirs[3].z*_W[3]*_A[3]*cos(_W[3]*dot(_Dirs[3],worldPos)+_XZ[3]*_Time.y);
 
-				o.normal=float3(-normalX,1-normalY,-normalZ);
-
-				o.vertex = UnityObjectToClipPos(v.vertex);				
+				o.worldNormal=float3(-normalX,1-normalY,-normalZ);		
 
 				return o;
 			}
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float3 normal=normalize(i.normal);
+				float3 normal=normalize(i.worldNormal);
+
+				float3 worldPos=i.worldPos;
+				
+
 				return float4(_Color.xyz,0.8);
 			}
 			ENDCG

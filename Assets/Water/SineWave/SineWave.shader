@@ -78,8 +78,6 @@
 								+_W[2]*_Dir2.z*_A*cos(dot(_Dirs[2],worldpos)*_W[2]+_XZ[2]*_Time.y)
 								+_W[3]*_Dir3.z*_A*cos(dot(_Dirs[3],worldpos)*_W[3]+_XZ[3]*_Time.y);
 
-				v.vertex=mul(unity_WorldToObject,worldpos);
-
 				o.worldPos=worldpos;
 				o.worldNormal=float3(-normalX,1,-normalZ);				
 				o.vertex = mul(UNITY_MATRIX_VP,worldpos);	
@@ -88,11 +86,17 @@
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float3 normal=normalize(i.worldNormal);
+				float3 worldNormal=normalize(i.worldNormal);
 
+				float3 worldPos=i.worldPos;
 
+				float3 diffuse=HalfLambert_DiffLightAmbient(worldNormal,worldPos,_Color,float3(0,0,0));
+				
+				float fresnel=getFresnel(0.1,1,worldNormal,worldPos,5);//菲尼尔
 
-				return float4(_Color.xyz,0.8);
+				diffuse=lerp(diffuse,float4(1,1,1,1),fresnel);
+
+				return float4(diffuse,0.8);
 			}
 			ENDCG
 		}
