@@ -44,9 +44,23 @@ public class ReflectionPanel : MonoBehaviour {
 		refCam.Render();
 		GL.invertCulling = false;
 		
-		refCam.targetTexture.wrapMode = TextureWrapMode.Repeat;
+		refCam.targetTexture.wrapMode = TextureWrapMode.Repeat;		
 		material.SetTexture("_RefTexture", refCam.targetTexture);
+
+		Vector4 panelVec=CameraSpacePlane(refCam, panel.position, panel.up, 1.0f, 0);
+
+		refCam.projectionMatrix=refCam.CalculateObliqueMatrix(panelVec);
+	    
 	}
+
+	public Vector4 CameraSpacePlane(Camera cam, Vector3 pos, Vector3 normal, float sideSign,float clipPlaneOffset)
+    {        
+        Vector3 offsetPos = pos + normal * clipPlaneOffset;
+        Matrix4x4 m = cam.worldToCameraMatrix;
+        Vector3 cpos = m.MultiplyPoint(offsetPos);
+        Vector3 cnormal = m.MultiplyVector(normal).normalized * sideSign;
+        return new Vector4(cnormal.x, cnormal.y, cnormal.z, -Vector3.Dot(cpos, cnormal));
+    }
 
 	/*
 	镜像矩阵
