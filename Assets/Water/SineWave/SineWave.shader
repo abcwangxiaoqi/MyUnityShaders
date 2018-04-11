@@ -10,6 +10,8 @@
 		_Dir3("运动方向3",vector)=(1,1,1,1)
 		_W("频率",vector)=(1,1,1,1)
 		_XZ("相位",vector)=(1,1,1,1)
+		_RefTexture("_RefTexture",2D) = "white"{}
+		_RefOffset("_RefOffset",Range(0.01,0.1))=0.02
 	}
 	SubShader
 	{
@@ -39,6 +41,7 @@
 				float4 vertex : SV_POSITION;
 				float3 worldNormal:NORMAL;
 				float3 worldPos:TEXCOORD1;
+				float4 ScreenPos:TEXCOORD2;
 			};
 
 			vector _A;
@@ -49,6 +52,8 @@
 			vector _W;
 			vector _XZ;
 			float4 _Color;
+			sampler2D _RefTexture;
+			float _RefOffset;
 			
 			v2f vert (appdata v)
 			{
@@ -81,6 +86,9 @@
 				o.worldPos=worldpos;
 				o.worldNormal=float3(-normalX,1,-normalZ);				
 				o.vertex = mul(UNITY_MATRIX_VP,worldpos);	
+
+				o.ScreenPos = ComputeScreenPos(o.vertex);
+
 				return o;
 			}
 			
@@ -90,8 +98,15 @@
 
 				float3 worldPos=i.worldPos;
 
-				float3 diffuse=HalfLambert_DiffLightAmbient(worldNormal,worldPos,_Color,float3(0,0,0));
-				
+				float3 diffuse=HalfLambert_DiffLightAmbient(worldNormal,worldPos,_Color,float3(0,0,0));				
+
+
+				float2 offsets =float2(worldNormal.x,worldNormal.z)*_RefOffset;//根据法线 uv扰动
+
+				half4 reflectionColor = tex2D(_RefTexture, (i.ScreenPos.xy/i.ScreenPos.w)+offsets);//反射贴图采样
+
+				diffuse+=reflectionColor;
+
 				float fresnel=getFresnel(0.1,1,worldNormal,worldPos,5);//菲尼尔
 
 				diffuse=lerp(diffuse,float4(1,1,1,1),fresnel);
