@@ -11,14 +11,16 @@
 		_W("频率",vector)=(1,1,1,1)
 		_XZ("相位",vector)=(1,1,1,1)
 		_RefTexture("_RefTexture",2D) = "white"{}
+		_RefrTexture("_RefrTexture",2D) = "white"{}
 		_RefOffset("_RefOffset",Range(0.01,0.1))=0.02
 	}
 	SubShader
 	{
 		Tags { "RenderType"="Transparent" }
 		LOD 100
-
+		
 		Blend SrcAlpha OneMinusSrcAlpha
+		
 
 		Pass
 		{
@@ -42,6 +44,7 @@
 				float3 worldNormal:NORMAL;
 				float3 worldPos:TEXCOORD1;
 				float4 ScreenPos:TEXCOORD2;
+				float4 proj:TEXCOORD3;
 			};
 
 			vector _A;
@@ -53,7 +56,11 @@
 			vector _XZ;
 			float4 _Color;
 			sampler2D _RefTexture;
+			sampler2D _RefrTexture;
 			float _RefOffset;
+
+			
+			float4x4 _RefractCameraVP;
 			
 			v2f vert (appdata v)
 			{
@@ -98,8 +105,7 @@
 
 				float3 worldPos=i.worldPos;
 
-				float3 diffuse=HalfLambert_DiffLightAmbient(worldNormal,worldPos,_Color,float3(0,0,0));				
-
+				float3 diffuse=HalfLambert_DiffLightAmbient(worldNormal,worldPos,_Color,float3(0,0,0));			
 
 				float2 offsets =float2(worldNormal.x,worldNormal.z)*_RefOffset;//根据法线 uv扰动
 

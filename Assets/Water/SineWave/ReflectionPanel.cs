@@ -4,52 +4,88 @@ using UnityEngine;
 
 public class ReflectionPanel : MonoBehaviour {
 
-	Camera refCam;
-	Material material;
-
+	Camera reflectionCam;
+	Camera refrationCam;
+	Renderer renderer;
 	Transform panel;
+	MaterialPropertyBlock materialPropertyBlock;
 	// Use this for initialization
 	void Start () {
 
+		materialPropertyBlock=new MaterialPropertyBlock();
+		renderer=transform.GetComponent<Renderer>();
+		renderer.GetPropertyBlock(materialPropertyBlock);
+
 		panel=transform;
 
+		#region 反射相机
+		GameObject refCamObj=new GameObject("reflectionCam");
+		reflectionCam=refCamObj.AddComponent<Camera>();
+		reflectionCam.CopyFrom(Camera.main);
+		reflectionCam.enabled = false;
+		reflectionCam.cullingMask =  ~(1 << LayerMask.NameToLayer("Water"));
+		reflectionCam.clearFlags=CameraClearFlags.SolidColor;
+		reflectionCam.backgroundColor=Color.black;	
+		RenderTexture reflectionRT=new RenderTexture(Screen.width,Screen.height,24);
+		reflectionCam.targetTexture=reflectionRT;
+		#endregion
 
-		GameObject refCamObj=new GameObject("refCam");
-		refCam=refCamObj.AddComponent<Camera>();
-		refCam.CopyFrom(Camera.main);
-		refCam.enabled = false;
-		refCam.cullingMask =  ~(1 << LayerMask.NameToLayer("Water"));
-		refCam.clearFlags=CameraClearFlags.SolidColor;
-		refCam.backgroundColor=Color.black;
-
-		material=transform.GetComponent<Renderer>().sharedMaterial;
-
-		RenderTexture renderTexture=new RenderTexture(Screen.width,Screen.height,24);
-		refCam.targetTexture=renderTexture;		
+		
+		#region 折射相机
+		GameObject refraCamObj=new GameObject("refractionCam");
+		refrationCam=refraCamObj.AddComponent<Camera>();
+		refrationCam.CopyFrom(Camera.main);
+		refrationCam.fieldOfView*=1.1f;
+		refrationCam.enabled = false;
+		refrationCam.cullingMask =  ~(1 << LayerMask.NameToLayer("Water"));
+		refrationCam.clearFlags=CameraClearFlags.SolidColor;
+		refrationCam.backgroundColor=Color.black;
+		RenderTexture refractionRT=new RenderTexture(Screen.width,Screen.height,24);
+		refrationCam.targetTexture=refractionRT;	
+		#endregion	
 	}
 
 	Matrix4x4 refMatrix;
 	public void OnWillRenderObject()
 	{
+		#region 反射
 		refMatrix=reflectionMatrix(panel);
-		refCam.worldToCameraMatrix = Camera.main.worldToCameraMatrix * refMatrix;
-		refCam.transform.position = refMatrix.MultiplyPoint(Camera.main.transform.position);
+		reflectionCam.worldToCameraMatrix = Camera.main.worldToCameraMatrix * refMatrix;
+		reflectionCam.transform.position = refMatrix.MultiplyPoint(Camera.main.transform.position);
 
 		Vector3 forward = Camera.main.transform.forward;
 		Vector3 up = Camera.main.transform.up;
 		forward = refMatrix.MultiplyPoint (forward);
-		refCam.transform.forward = forward;
+		reflectionCam.transform.forward = forward;	
 		
+		Vector4 panelVec=CameraSpacePlane(reflectionCam, panel.position, panel.up, 1.0f, 0);
+		reflectionCam.projectionMatrix=reflectionCam.CalculateObliqueMatrix(panelVec);
+
+		reflectionCam.targetTexture.wrapMode = TextureWrapMode.Repeat;	
+		materialPropertyBlock.SetTexture("_RefTexture", reflectionCam.targetTexture);
+		#endregion
+
+		#region 折射
+		refrationCam.transform.position=Camera.main.transform.position;
+		refrationCam.transform.rotation=Camera.main.transform.rotation;
+
+		Matrix4x4 P =GL.GetGPUProjectionMatrix(refrationCam.projectionMatrix, false);
+		Matrix4x4 V=refrationCam.worldToCameraMatrix;
+
+		Matrix4x4 VP=P*V;
+
+		refrationCam.projectionMatrix=refrationCam.CalculateObliqueMatrix(panelVec);
+
+		refrationCam.targetTexture.wrapMode = TextureWrapMode.Repeat;	
+		materialPropertyBlock.SetTexture("_RefrTexture", refrationCam.targetTexture);
+		materialPropertyBlock.SetMatrix("_RefractCameraVP",VP);
+		#endregion
+
+		renderer.SetPropertyBlock(materialPropertyBlock);
+
 		GL.invertCulling = true;
-		refCam.Render();
+		reflectionCam.Render();
 		GL.invertCulling = false;
-		
-		refCam.targetTexture.wrapMode = TextureWrapMode.Repeat;		
-		material.SetTexture("_RefTexture", refCam.targetTexture);
-
-		Vector4 panelVec=CameraSpacePlane(refCam, panel.position, panel.up, 1.0f, 0);
-
-		refCam.projectionMatrix=refCam.CalculateObliqueMatrix(panelVec);
 	    
 	}
 
