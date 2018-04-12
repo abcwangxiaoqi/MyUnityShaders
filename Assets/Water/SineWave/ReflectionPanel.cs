@@ -74,10 +74,14 @@ public class ReflectionPanel : MonoBehaviour {
 
 		Matrix4x4 VP=P*V;
 
-		refrationCam.projectionMatrix=refrationCam.CalculateObliqueMatrix(panelVec);
+		Vector4 panelVec2=CameraSpacePlane(refrationCam, panel.position, panel.up, 1.0f, 0);
+
+		refrationCam.projectionMatrix=refrationCam.CalculateObliqueMatrix(panelVec2);
 
 		refrationCam.targetTexture.wrapMode = TextureWrapMode.Repeat;	
 		materialPropertyBlock.SetTexture("_RefrTexture", refrationCam.targetTexture);
+
+		
 		materialPropertyBlock.SetMatrix("_RefractCameraVP",VP);
 		#endregion
 
@@ -85,6 +89,7 @@ public class ReflectionPanel : MonoBehaviour {
 
 		GL.invertCulling = true;
 		reflectionCam.Render();
+		refrationCam.Render();
 		GL.invertCulling = false;
 	    
 	}

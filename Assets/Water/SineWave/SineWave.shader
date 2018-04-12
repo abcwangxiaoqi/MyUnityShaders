@@ -44,7 +44,7 @@
 				float3 worldNormal:NORMAL;
 				float3 worldPos:TEXCOORD1;
 				float4 ScreenPos:TEXCOORD2;
-				float4 proj:TEXCOORD3;
+				float4 refrScreenPos:TEXCOORD3;
 			};
 
 			vector _A;
@@ -95,6 +95,7 @@
 				o.vertex = mul(UNITY_MATRIX_VP,worldpos);	
 
 				o.ScreenPos = ComputeScreenPos(o.vertex);
+				o.refrScreenPos=ComputeScreenPos(mul(_RefractCameraVP,worldpos));
 
 				return o;
 			}
@@ -110,14 +111,18 @@
 				float2 offsets =float2(worldNormal.x,worldNormal.z)*_RefOffset;//根据法线 uv扰动
 
 				half4 reflectionColor = tex2D(_RefTexture, (i.ScreenPos.xy/i.ScreenPos.w)+offsets);//反射贴图采样
+				half4 refractionColor=tex2D(_RefrTexture,(i.refrScreenPos.xy/i.refrScreenPos.w)+offsets);//折射贴图采样
 
-				diffuse+=reflectionColor;
+				//diffuse+=reflectionColor;
 
 				float fresnel=getFresnel(0.1,1,worldNormal,worldPos,5);//菲尼尔
 
-				diffuse=lerp(diffuse,float4(1,1,1,1),fresnel);
+				//diffuse=lerp(diffuse,float4(1,1,1,1),fresnel);
 
-				return float4(diffuse,0.8);
+				//diffuse= lerp(refractionColor,reflectionColor,fresnel).xyz;
+				diffuse+=refractionColor;
+
+				return float4(diffuse.xyz,0.8);
 			}
 			ENDCG
 		}
