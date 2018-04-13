@@ -3,24 +3,22 @@
 	Properties
 	{
 		_Color("Water Color",Color)=(1,1,1,1)
-		_Q("波尖",vector)=(1,1,1,1)
 		_A("振幅",vector)=(1,1,1,1)
+		_Q("_Q",vector)=(1,1,1,1)
 		_Dir("运动方向",vector)=(1,1,1,1)
 		_Dir1("运动方向1",vector)=(1,1,1,1)
 		_Dir2("运动方向2",vector)=(1,1,1,1)
 		_Dir3("运动方向3",vector)=(1,1,1,1)
 		_W("频率",vector)=(1,1,1,1)
 		_XZ("相位",vector)=(1,1,1,1)
+		_RefTexture("_RefTexture",2D) = "white"{}
+		_RefrTexture("_RefrTexture",2D) = "white"{}
+		_RefOffset("_RefOffset",Range(0.01,0.1))=0.02
 	}
 	SubShader
 	{
-		Tags { "RenderType"="Transparent" }
+		Tags { "RenderType"="Opaque" }
 		LOD 100
-
-		
-		Blend SrcAlpha OneMinusSrcAlpha
-
-		ZWrite Off
 
 		Pass
 		{
@@ -29,6 +27,7 @@
 			#pragma fragment frag
 			
 			#include "UnityCG.cginc"
+			#include "../../CommonCg/MyCgInclude.cginc"
 
 			struct appdata
 			{
@@ -40,8 +39,10 @@
 			{
 				float2 uv : TEXCOORD0;
 				float4 vertex : SV_POSITION;
-				float3 worldPos:TEXCOORD1;
 				float3 worldNormal:NORMAL;
+				float3 worldPos:TEXCOORD1;
+				float4 ScreenPos:TEXCOORD2;
+				float4 refrScreenPos:TEXCOORD3;
 			};
 
 			vector _Q;
@@ -53,6 +54,11 @@
 			vector _W;
 			vector _XZ;
 			float4 _Color;
+			sampler2D _RefTexture;
+			sampler2D _RefrTexture;
+			float _RefOffset;
+
+			float4x4 _RefractCameraVP;
 			
 			v2f vert (appdata v)
 			{
@@ -107,19 +113,33 @@
 								+_Dirs[2].z*_W[2]*_A[2]*cos(_W[2]*dot(_Dirs[2],worldPos)+_XZ[2]*_Time.y)
 								+_Dirs[3].z*_W[3]*_A[3]*cos(_W[3]*dot(_Dirs[3],worldPos)+_XZ[3]*_Time.y);
 
-				o.worldNormal=float3(-normalX,1-normalY,-normalZ);		
+				o.worldNormal=float3(-normalX,1-normalY,-normalZ);
+
+				o.ScreenPos = ComputeScreenPos(o.vertex);
+				o.refrScreenPos=ComputeScreenPos(mul(_RefractCameraVP,worldPos));		
 
 				return o;
 			}
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float3 normal=normalize(i.worldNormal);
+				float3 worldNormal=normalize(i.worldNormal);
 
 				float3 worldPos=i.worldPos;
-				
 
-				return float4(_Color.xyz,0.8);
+				float4 diffuse;
+				diffuse.xyz=HalfLambert_DiffLightAmbient(worldNormal,worldPos,_Color,float3(0,0,0));			
+
+				float2 offsets =float2(worldNormal.x,worldNormal.z)*_RefOffset;//根据法线 uv扰动
+
+				half4 reflectionColor = tex2D(_RefTexture, (i.ScreenPos.xy/i.ScreenPos.w)+offsets);//反射贴图采样
+				half4 refractionColor=tex2D(_RefrTexture,(i.refrScreenPos.xy/i.refrScreenPos.w)+offsets);//折射贴图采样
+
+				float fresnel=getFresnel(0.1,1,worldNormal,worldPos,5);//菲尼尔
+
+				diffuse.xyz+=lerp(refractionColor,reflectionColor,fresnel);//视角越小 反射越强 折射越弱
+
+				return diffuse;
 			}
 			ENDCG
 		}

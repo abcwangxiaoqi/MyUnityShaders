@@ -25,7 +25,7 @@ public class ReflectionPanel : MonoBehaviour {
 		reflectionCam.enabled = false;
 		reflectionCam.cullingMask =  ~(1 << LayerMask.NameToLayer("Water"));
 		reflectionCam.clearFlags=CameraClearFlags.SolidColor;
-		reflectionCam.backgroundColor=Color.black;	
+		reflectionCam.backgroundColor=new Color(0,0,0,0);
 		RenderTexture reflectionRT=new RenderTexture(Screen.width,Screen.height,24);
 		reflectionCam.targetTexture=reflectionRT;
 		#endregion
@@ -39,7 +39,7 @@ public class ReflectionPanel : MonoBehaviour {
 		refrationCam.enabled = false;
 		refrationCam.cullingMask =  ~(1 << LayerMask.NameToLayer("Water"));
 		refrationCam.clearFlags=CameraClearFlags.SolidColor;
-		refrationCam.backgroundColor=Color.black;
+		refrationCam.backgroundColor=new Color(0,0,0,0);
 		RenderTexture refractionRT=new RenderTexture(Screen.width,Screen.height,24);
 		refrationCam.targetTexture=refractionRT;	
 		#endregion	
@@ -69,12 +69,11 @@ public class ReflectionPanel : MonoBehaviour {
 		refrationCam.transform.position=Camera.main.transform.position;
 		refrationCam.transform.rotation=Camera.main.transform.rotation;
 
-		Matrix4x4 P =GL.GetGPUProjectionMatrix(refrationCam.projectionMatrix, false);
+		Matrix4x4 P =GL.GetGPUProjectionMatrix(refrationCam.projectionMatrix, true);
 		Matrix4x4 V=refrationCam.worldToCameraMatrix;
-
 		Matrix4x4 VP=P*V;
 
-		Vector4 panelVec2=CameraSpacePlane(refrationCam, panel.position, panel.up, 1.0f, 0);
+		Vector4 panelVec2=CameraSpacePlane(refrationCam, panel.position, -panel.up, 1.0f, 0);
 
 		refrationCam.projectionMatrix=refrationCam.CalculateObliqueMatrix(panelVec2);
 

@@ -16,10 +16,8 @@
 	}
 	SubShader
 	{
-		Tags { "RenderType"="Transparent" }
+		Tags { "RenderType"="Opaque" }
 		LOD 100
-		
-		Blend SrcAlpha OneMinusSrcAlpha
 		
 
 		Pass
@@ -106,23 +104,19 @@
 
 				float3 worldPos=i.worldPos;
 
-				float3 diffuse=HalfLambert_DiffLightAmbient(worldNormal,worldPos,_Color,float3(0,0,0));			
+				float4 diffuse;
+				diffuse.xyz=HalfLambert_DiffLightAmbient(worldNormal,worldPos,_Color,float3(0,0,0));			
 
 				float2 offsets =float2(worldNormal.x,worldNormal.z)*_RefOffset;//根据法线 uv扰动
 
 				half4 reflectionColor = tex2D(_RefTexture, (i.ScreenPos.xy/i.ScreenPos.w)+offsets);//反射贴图采样
 				half4 refractionColor=tex2D(_RefrTexture,(i.refrScreenPos.xy/i.refrScreenPos.w)+offsets);//折射贴图采样
 
-				//diffuse+=reflectionColor;
-
 				float fresnel=getFresnel(0.1,1,worldNormal,worldPos,5);//菲尼尔
 
-				//diffuse=lerp(diffuse,float4(1,1,1,1),fresnel);
+				diffuse.xyz+=lerp(refractionColor,reflectionColor,fresnel);//视角越小 反射越强 折射越弱
 
-				//diffuse= lerp(refractionColor,reflectionColor,fresnel).xyz;
-				diffuse+=refractionColor;
-
-				return float4(diffuse.xyz,0.8);
+				return diffuse;
 			}
 			ENDCG
 		}
