@@ -86,10 +86,8 @@ public class ReflectionPanel : MonoBehaviour {
 
 		renderer.SetPropertyBlock(materialPropertyBlock);
 
-		GL.invertCulling = true;
 		reflectionCam.Render();
 		refrationCam.Render();
-		GL.invertCulling = false;
 	    
 	}
 

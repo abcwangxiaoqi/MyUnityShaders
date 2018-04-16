@@ -71,19 +71,19 @@
 
 				float4 worldpos=mul(unity_ObjectToWorld,v.vertex);
 
-				float yoffset=_A[0]*sin(dot(_Dirs[0],worldpos)*_W[0]+_XZ[0]*_Time.y)
+				float yoffset=_A[0]*sin(dot(_Dirs[0],worldpos)*_W[0]+_XZ[0]*_Time.y);
 								+_A[1]*sin(dot(_Dirs[1],worldpos)*_W[1]+_XZ[1]*_Time.y)
 								+_A[2]*sin(dot(_Dirs[2],worldpos)*_W[2]+_XZ[2]*_Time.y)
 								+_A[3]*sin(dot(_Dirs[3],worldpos)*_W[3]+_XZ[3]*_Time.y);
 
 				worldpos.y=yoffset;
 
-				float normalX=_W[0]*_Dir.x*_A*cos(dot(_Dirs[0],worldpos)*_W[0]+_XZ[0]*_Time.y)
+				float normalX=_W[0]*_Dir.x*_A*cos(dot(_Dirs[0],worldpos)*_W[0]+_XZ[0]*_Time.y);
 								+_W[1]*_Dir1.x*_A*cos(dot(_Dirs[1],worldpos)*_W[1]+_XZ[1]*_Time.y)
 								+_W[2]*_Dir2.x*_A*cos(dot(_Dirs[2],worldpos)*_W[2]+_XZ[2]*_Time.y)
 								+_W[3]*_Dir3.x*_A*cos(dot(_Dirs[3],worldpos)*_W[3]+_XZ[3]*_Time.y);
 
-				float normalZ=_W[0]*_Dir.z*_A*cos(dot(_Dirs[0],worldpos)*_W[0]+_XZ[0]*_Time.y)
+				float normalZ=_W[0]*_Dir.z*_A*cos(dot(_Dirs[0],worldpos)*_W[0]+_XZ[0]*_Time.y);
 								+_W[1]*_Dir1.z*_A*cos(dot(_Dirs[1],worldpos)*_W[1]+_XZ[1]*_Time.y)
 								+_W[2]*_Dir2.z*_A*cos(dot(_Dirs[2],worldpos)*_W[2]+_XZ[2]*_Time.y)
 								+_W[3]*_Dir3.z*_A*cos(dot(_Dirs[3],worldpos)*_W[3]+_XZ[3]*_Time.y);
