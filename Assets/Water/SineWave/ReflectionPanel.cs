@@ -86,6 +86,7 @@ public class ReflectionPanel : MonoBehaviour {
 
 		renderer.SetPropertyBlock(materialPropertyBlock);
 
+
 		reflectionCam.Render();
 		refrationCam.Render();
 	    
