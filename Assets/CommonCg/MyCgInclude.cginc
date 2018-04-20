@@ -184,6 +184,12 @@
 		return lambert*diffuse*_LightColor0.xyz+ambient;
 	}
 
+	inline float3 Lambert_DiffLight(in float3 worldNormal,in float3 worldPos,in float3 diffuse)
+	{
+		float3 lambert=Lambert(worldNormal,worldPos);
+		return lambert*diffuse*_LightColor0.xyz;
+	}
+
 	//half lambert light model
 	inline float3 HalfLambert(in float3 worldNormal,in float3 worldPos)
 	{
@@ -197,6 +203,12 @@
 	{
 		float3 lambert=HalfLambert(worldNormal,worldPos);
 		return lambert*diffuse*_LightColor0.xyz+ambient;
+	}
+
+	inline float3 HalfLambert_DiffLight(in float3 worldNormal,in float3 worldPos,in float3 diffuse)
+	{
+		float3 lambert=HalfLambert(worldNormal,worldPos);
+		return lambert*diffuse*_LightColor0.xyz;
 	}
 
 	//unity 自带环境光
@@ -214,6 +226,18 @@
 	{
 		float f=fresnelBase+fresnelScale*pow(1-DotViewAndNormal(worldNormal,worldPos),fresnelIndensity);
 		return f;
+	}
+
+	/*
+	BPhong Spec 
+	*/
+	inline float3 BPhongSpec(in float3 worldNormal,in float3 worldPos,in float3 _Color,in float _Gloss)
+	{
+		float3 worldLightDir=normalize(UnityWorldSpaceLightDir(worldPos));
+		float3 viewDir = normalize(UnityWorldSpaceViewDir(worldPos));
+		float3 halfDir = normalize(worldLightDir + viewDir);
+		float3 specular = _LightColor0.rgb * _Color.rgb * pow(max(0, dot(worldNormal, halfDir)), _Gloss);
+		return specular;
 	}
 
 #endif
