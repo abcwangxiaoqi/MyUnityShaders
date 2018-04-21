@@ -5,7 +5,7 @@
 		_MainTex ("Texture", 2D) = "white" {}
 		_Color("Color",Color)=(1,1,1,1)
 		_SpeColor("_SpecColor",Color)=(1,1,1,1)
-		_Gloss("_Gloss",float)=2
+		_Gloss("_Gloss",float)=100
 	}
 	SubShader
 	{
@@ -37,9 +37,10 @@
 			struct v2f
 			{
 				float4 pos : SV_POSITION;
-				float3 worldNormal : TEXCOORD0;
-				float3 worldPos : TEXCOORD1;
-				SHADOW_COORDS(2)
+				float2 uv:TEXCOORD0;
+				float3 worldNormal : TEXCOORD1;
+				float3 worldPos : TEXCOORD2;
+				SHADOW_COORDS(3)
 			};
 
 			sampler2D _MainTex;
@@ -56,7 +57,7 @@
 			 	
 			 	o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
 
-			//	 o.uv=v.uv;
+				 o.uv=TRANSFORM_TEX(v.uv,_MainTex);
 			 	
 			 	TRANSFER_SHADOW(o);
 			 	
@@ -65,18 +66,18 @@
 			
 				fixed4 frag(v2f i) : SV_Target {
 
-			//	float3 col=tex2D(_MainTex,i.uv);
-				fixed3 worldNormal = normalize(i.worldNormal);
+				float3 ablode=tex2D(_MainTex,i.uv);
+				float3 worldNormal = normalize(i.worldNormal);
 
 				float3 diffuse=HalfLambert_DiffLight(worldNormal,i.worldPos,_Color);
 				
-				fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
+				float3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
 
 			 	float3 specular = BPhongSpec(worldNormal,i.worldPos,_SpeColor.xyz,_Gloss);
 
 				UNITY_LIGHT_ATTENUATION(atten, i, i.worldPos);
 				
-				return fixed4(ambient + (diffuse +specular) * atten, 1.0);
+				return float4(ambient + (ablode*diffuse +specular) * atten, 1.0);
 			}
 			ENDCG
 		}
