@@ -3,6 +3,7 @@
 	Properties
 	{
 		_Color("Water Color",Color)=(1,1,1,1)
+		_MainTex("_MainTex",2D)="white"{}
 		_A("振幅",vector)=(1,1,1,1)
 		_Q("_Q",vector)=(1,1,1,1)
 		_Dir("运动方向",vector)=(1,1,1,1)
@@ -57,6 +58,9 @@
 			sampler2D _RefTexture;
 			sampler2D _RefrTexture;
 			float _RefOffset;
+
+			sampler2D _MainTex;
+			float4 _MainTex_ST;
 
 			float4x4 _RefractCameraVP;
 			
@@ -118,6 +122,8 @@
 				o.ScreenPos = ComputeScreenPos(o.vertex);
 				o.refrScreenPos=ComputeScreenPos(mul(_RefractCameraVP,worldPos));		
 
+				o.uv=TRANSFORM_TEX(v.uv,_MainTex);
+
 				return o;
 			}
 			
@@ -127,8 +133,8 @@
 
 				float3 worldPos=i.worldPos;
 
-				float4 diffuse;
-				diffuse.xyz=HalfLambert_DiffLightAmbient(worldNormal,worldPos,_Color,float3(0,0,0));			
+				float4 diffuse=tex2D(_MainTex,i.uv);
+				diffuse.xyz*=HalfLambert_DiffLightAmbient(worldNormal,worldPos,_Color,float3(0,0,0));			
 
 				float2 offsets =float2(worldNormal.x,worldNormal.z)*_RefOffset;//根据法线 uv扰动
 

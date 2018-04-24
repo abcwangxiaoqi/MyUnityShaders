@@ -6,6 +6,7 @@ Shader "Unlit/SineWave"
 	Properties
 	{
 		_Color("Water Color",Color)=(1,1,1,1)
+		_MainTex("_MainTex",2D)="white"{}
 		_A("振幅",vector)=(1,1,1,1)
 		_Dir("运动方向",vector)=(1,1,1,1)
 		_Dir1("运动方向1",vector)=(1,1,1,1)
@@ -56,6 +57,8 @@ Shader "Unlit/SineWave"
 			vector _W;
 			vector _XZ;
 			float4 _Color;
+			sampler2D _MainTex;
+			float4 _MainTex_ST;
 			sampler2D _RefTexture;
 			sampler2D _RefrTexture;
 			float _RefOffset;
@@ -95,6 +98,8 @@ Shader "Unlit/SineWave"
 				o.worldNormal=float3(-normalX,1,-normalZ);				
 				o.vertex = mul(UNITY_MATRIX_VP,worldpos);	
 
+				o.uv=TRANSFORM_TEX(v.uv,_MainTex);
+
 				o.ScreenPos = ComputeScreenPos(o.vertex);
 				o.refrScreenPos=ComputeScreenPos(mul(_RefractCameraVP,worldpos));
 
@@ -107,8 +112,8 @@ Shader "Unlit/SineWave"
 
 				float3 worldPos=i.worldPos;
 
-				float4 diffuse;
-				diffuse.xyz=HalfLambert_DiffLightAmbient(worldNormal,worldPos,_Color,float3(0,0,0));			
+				float4 diffuse=tex2D(_MainTex,i.uv);
+				diffuse.xyz*=HalfLambert_DiffLightAmbient(worldNormal,worldPos,_Color,float3(0,0,0));			
 
 				float2 offsets =float2(worldNormal.x,worldNormal.z)*_RefOffset;//根据法线 uv扰动
 
