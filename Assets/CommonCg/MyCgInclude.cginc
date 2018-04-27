@@ -240,4 +240,24 @@
 		return specular;
 	}
 
+	/*
+	Phong Spec
+
+	R = 2*N(dot(N, L)) - L
+	Spec = pow( max(0 ,cos<R, V>), gloss)
+	*/
+	inline float3 PhongSpec(in float3 worldNormal,in float3 worldPos,in float3 _Color,in float _Gloss)
+	{
+		float3 worldLightDir=normalize(UnityWorldSpaceLightDir(worldPos));
+		float3 viewDir = normalize(UnityWorldSpaceViewDir(worldPos));
+
+		float diff = saturate(dot(worldLightDir, worldNormal));
+
+		float3 reflection = normalize(2.0 * worldNormal * diff - worldLightDir);//反射向量
+        float specular = _LightColor0.rgb * _Color.rgb * pow(max(0, dot(reflection, viewDir)), _Gloss);
+
+		return specular;
+	}
+
+
 #endif
